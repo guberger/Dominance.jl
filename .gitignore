@@ -23,7 +23,4 @@ docs/site/
 # environment.
 Manifest.toml
 
-*.png
-*.eps
-*.jpg
-*.pdf
+/figures/

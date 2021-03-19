@@ -16,7 +16,8 @@ function solve_lmi_disc_path(A_list, edge_list, rates_list)
     P_max = Vector{Matrix{Float64}}(undef, nNode)
 
     for (iter, rates) in enumerate(rates_list)
-        model = Model(optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true))
+        model = Model(optimizer_with_attributes(Mosek.Optimizer,
+            "QUIET" => true))
 
         P_list = [@variable(model, [1:dim, 1:dim], Symmetric,
             base_name = string("P", q)) for q = 1:nNode]
@@ -27,11 +28,14 @@ function solve_lmi_disc_path(A_list, edge_list, rates_list)
             P2 = P_list[edge[2]]
             A = A_list[edge[3]]
             r = rates[edge[4]]^2
-            @constraint(model, Symmetric(r*P1 - A'*P2*A - ee.*EYE_) in PSDCone())
+            @constraint(model, Symmetric(r*P1 - A'*P2*A - ee.*EYE_)
+                in PSDCone())
         end
 
-        @constraint(model, [q = 1:nNode], Symmetric(EYE_ - P_list[q]) in PSDCone())
-        @constraint(model, [q = 1:nNode], Symmetric(EYE_ + P_list[q]) in PSDCone())
+        @constraint(model, [q = 1:nNode], Symmetric(EYE_ - P_list[q])
+            in PSDCone())
+        @constraint(model, [q = 1:nNode], Symmetric(EYE_ + P_list[q])
+            in PSDCone())
 
         @objective(model, Max, ee)
 
@@ -63,7 +67,8 @@ function solve_lmi_disc_path_convex(Ac_list, Ad_list, edge_list, rates_list)
     P_max = Vector{Matrix{Float64}}(undef, nNode)
 
     for (iter, rates) in enumerate(rates_list)
-        model = Model(optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true))
+        model = Model(optimizer_with_attributes(Mosek.Optimizer,
+            "QUIET" => true))
 
         P_list = [@variable(model, [1:dim, 1:dim], Symmetric,
             base_name = string("P", q)) for q = 1:nNode]
@@ -115,7 +120,8 @@ function solve_lmi_cont_path(A_list, edge_list, rates_list)
     P_max = Vector{Matrix{Float64}}(undef, nNode)
 
     for (iter, rates) in enumerate(rates_list)
-        model = Model(optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true))
+        model = Model(optimizer_with_attributes(Mosek.Optimizer,
+            "QUIET" => true))
 
         P_list = [@variable(model, [1:dim, 1:dim], Symmetric,
             base_name = string("P", q)) for q = 1:nNode]
@@ -126,11 +132,14 @@ function solve_lmi_cont_path(A_list, edge_list, rates_list)
             P2 = P_list[edge[2]]
             A = A_list[edge[3]]
             r = 2.0*rates[edge[4]]
-            @constraint(model, Symmetric(r*P1 - A'*P2 - P2*A - ee.*EYE_) in PSDCone())
+            @constraint(model, Symmetric(r*P1 - A'*P2 - P2*A - ee.*EYE_)
+                in PSDCone())
         end
 
-        @constraint(model, [q = 1:nNode], Symmetric(EYE_ - P_list[q]) in PSDCone())
-        @constraint(model, [q = 1:nNode], Symmetric(EYE_ + P_list[q]) in PSDCone())
+        @constraint(model, [q = 1:nNode], Symmetric(EYE_ - P_list[q])
+            in PSDCone())
+        @constraint(model, [q = 1:nNode], Symmetric(EYE_ + P_list[q])
+            in PSDCone())
 
         @objective(model, Max, ee)
 
@@ -155,7 +164,8 @@ function ndgrid_array(vec_array)
 end
 
 function linspace_array(bounds_list, ndisc)
-    return [range(bounds_list[i][1], stop = bounds_list[i][2], length = ndisc) for i = 1:length(bounds_list)]
+    return [range(bounds_list[i][1], stop = bounds_list[i][2], length = ndisc)
+        for i in eachindex(bounds_list)]
 end
 
 function pth_eigen(A, p, shrink)
