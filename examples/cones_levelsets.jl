@@ -11,6 +11,11 @@ _cols = repeat(matplotlib.rcParams["axes.prop_cycle"].by_key()["color"], 10, 1)
 CConv = matplotlib.colors.colorConverter
 axes_grid1 = pyimport("mpl_toolkits.axes_grid1")
 
+matplotlib.rc("legend", fontsize = 15)
+matplotlib.rc("axes", labelsize = 15)
+matplotlib.rc("xtick", labelsize = 11)
+matplotlib.rc("ytick", labelsize = 11)
+
 P = [-0.5 0; 0 0.25]
 V(x, y) = [x y]*P*[x; y]
 
@@ -24,10 +29,11 @@ X = map(x -> x[1], IT)
 Y = map(x -> x[2], IT)
 Z = map((x, y) -> V(x, y)[1], X, Y)
 
-fig = PyPlot.figure(figsize = (9.4, 4.8))
+fig = PyPlot.figure(figsize = (9.8, 4.8))
 gs = matplotlib.gridspec.GridSpec(1, 2, figure = fig,
-    width_ratios = (1, 1.5), wspace = 0.2)
+    width_ratios = (1, 1.5), wspace = 0.25)
 ax = fig.add_subplot(get(gs, 0), aspect = "equal")
+# ax = fig.add_axes((0.1, 0.0, 0.35, 0.35), aspect = "equal")
 
 CS = ax.contour(X, Y, Z)
 ax.clabel(CS, CS.levels, inline = true, fmt = "%2.1f", fontsize = 14)
@@ -45,6 +51,8 @@ ax.set_xlim(-1.0, 1.0)
 ax.set_ylim(-1.0, 1.0)
 ax.set_xlabel("x")
 ax.set_ylabel("y")
+ax.set_xticks(Tuple(-1.0:0.5:1.0))
+ax.set_yticks(Tuple(-1.0:0.5:1.0))
 
 P = [1.0 0 0; 0 1.0 0; 0 0 -2.0]
 np = 50
@@ -124,6 +132,14 @@ ax.set_xlabel("x")
 ax.set_ylabel("y")
 ax.set_zlabel("z")
 ax.view_init(elev = 14.0, azim = 52.0)
+ax.set_xticks(Tuple(-1.0:0.5:1.0))
+ax.set_yticks(Tuple(-1.0:0.5:1.0))
+ax.set_zticks(Tuple(-1.0:0.5:1.0))
+
+# zlevel = 0.79
+# fig.text(0.05, zlevel, "a", weight = "bold", fontsize = 15)
+# fig.text(0.46, zlevel, "b", weight = "bold", fontsize = 15)
+
 fig.savefig("./figures/fig_cones_levelsets.png", transparent = false,
-    bbox_inches = matplotlib.transforms.Bbox([[0.45, 0.6], [8.45, 3.8]]))
+    bbox_inches = matplotlib.transforms.Bbox([[0.5, 0.53], [8.85, 3.8]]))
 end

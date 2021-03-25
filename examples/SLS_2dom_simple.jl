@@ -13,6 +13,11 @@ _cols = repeat(matplotlib.rcParams["axes.prop_cycle"].by_key()["color"], 10, 1)
 CConv = matplotlib.colors.colorConverter
 axes_grid1 = pyimport("mpl_toolkits.axes_grid1")
 
+matplotlib.rc("legend", fontsize = 15)
+matplotlib.rc("axes", labelsize = 15)
+matplotlib.rc("xtick", labelsize = 11)
+matplotlib.rc("ytick", labelsize = 11)
+
 theAlpha = -1.0:0.25:0.0
 A_list = [[1 0.5 0; α 0.75 0.5; -0.5 0 1.0] for α = theAlpha]
 
@@ -24,8 +29,9 @@ XS = rad*cos.(u)'.*sin.(v)
 YS = rad*sin.(u)'.*sin.(v)
 ZS = rad*ones(size(u))'.*cos.(v)
 
-fig = PyPlot.figure(figsize = [10.05, 5.7])
-gs = matplotlib.gridspec.GridSpec(2, 3, figure = fig, wspace = 0.06, hspace = 0.15)
+fig = PyPlot.figure(figsize = (10.05, 5.7))
+gs = matplotlib.gridspec.GridSpec(2, 3, figure = fig, wspace = 0.06,
+    hspace = 0.15)
 
 np = 20
 rad = 1.0
@@ -61,8 +67,7 @@ for i = 1:6
     ax.tick_params(axis = "both", labelsize = 8)
 end
 
-fig.savefig("test/figures/fig_SLS_2dom_simple_traj.png",
-    transparent = false,
-    bbox_inches = matplotlib.transforms.Bbox([[1.1, 0.5], [9.05, 5.1]]))
+fig.savefig("./figures/fig_SLS_2dom_simple_traj.png", transparent = false,
+    bbox_inches = matplotlib.transforms.Bbox([[1.15, 0.5], [9.05, 5.1]]))
 
 end

@@ -13,6 +13,11 @@ _cols = repeat(matplotlib.rcParams["axes.prop_cycle"].by_key()["color"], 10, 1)
 CConv = matplotlib.colors.colorConverter
 axes_grid1 = pyimport("mpl_toolkits.axes_grid1")
 
+matplotlib.rc("legend", fontsize = 15)
+matplotlib.rc("axes", labelsize = 15)
+matplotlib.rc("xtick", labelsize = 11)
+matplotlib.rc("ytick", labelsize = 11)
+
 Ga = [0.1 0.2 0.2; 0.95 0 0; 0 0.9 0]
 Gb = [0.3 0.9 0.7; 0.9 0 0; 0 0.85 0]
 alpha = 0.3
@@ -35,8 +40,9 @@ display([γ1, γ2])
 ev1 = eigvals(A1)
 ev2 = eigvals(A2)
 
-fig = PyPlot.figure(figsize = [6.0, 4.8])
+fig = PyPlot.figure(figsize = (6.0, 4.8))
 ax = fig.gca(aspect = "equal")
+
 np = 50
 t = range(0.0, 2.0*pi, length = np)
 
@@ -45,20 +51,17 @@ ax.plot(γ1*cos.(t), γ1*sin.(t), ls = "--", c = _cols[1], lw = 3.0,
 ax.plot(γ2*cos.(t), γ2*sin.(t), ls = "--", c = _cols[2], lw = 3.0,
     label = L"$\gamma_{\mathtt{a}2\mathtt{a}}$")
 ax.plot(0.0, 0.0, marker = "x", c = "k", ms = 8, mew = 3.0)
-
 ax.plot(real.(ev1), imag.(ev1), marker = ".", ms = 18, ls = "none",
     mfc = _cols[1], mec = "black", mew = 1.5, label = L"$A_1$")
 ax.plot(real.(ev2), imag.(ev2), marker = ".", ms = 18, ls = "none",
     mfc = _cols[2], mec = "black", mew = 1.5, label = L"$A_2$")
 
-Leg = ax.legend(fontsize = 14, loc = "upper left", bbox_to_anchor = (1.01, 1.0))
+Leg = ax.legend(loc = "upper left", bbox_to_anchor = (1.01, 1.0))
 ax.grid(true)
 ax.set_xlabel("Re(λ)")
 ax.set_ylabel("Im(λ)")
 ax.set_xlim(-1.2, 1.5)
 ax.set_ylim(-1.3, 1.3)
-fig.savefig("test/figures/fig_SLS_1dom_Leslie_eigs.png",
-    transparent = false, bbox_inches = "tight")
 
 ## Cones
 
@@ -81,9 +84,9 @@ display(ee_max)
 display(rates_max)
 @printf("\n")
 
-## Asymptotic behavior
+## Trajectories
 
-Random.seed!(1)
+Random.seed!(0)
 np = 10
 tmax = 15
 x_list = Vector{Vector{Vector{Float64}}}(undef, tmax)
@@ -91,10 +94,9 @@ x_list[1] = [rand(6) for n = 1: np]
 fnorm = x -> x/norm(x, 1)
 map!(fnorm, x_list[1], x_list[1])
 seq = rand([1, length(A_list)], tmax)
-display(seq)
 
-fig = PyPlot.figure(figsize = [9.8, 4.8])
-ax = fig.gca()
+fig = PyPlot.figure(figsize = (9.8, 4.8))
+ax = fig.add_subplot()
 
 for t = 1:tmax-1
     x_list[t+1] = map(x -> fnorm(A_list[seq[t]]*x), x_list[t])
@@ -106,22 +108,19 @@ for i = 1:6, k = 1:np
     ax.plot(X_plot[k,i], marker = ".", ms = 10, c = _cols[i])
 end
 
-circ = Vector{Any}(undef, 6)
+circ = [matplotlib.lines.Line2D([0.0], [0.0], ls = "solid", c = _cols[i],
+    marker = ".", ms = 10, mfc = _cols[i], mec = _cols[i]) for i = 1:6]
 
-for i = 1:6
-    circ[i] = matplotlib.lines.Line2D([0.0], [0.0], ls = "solid", c = _cols[i],
-        marker = ".", ms = 10, mfc = _cols[i], mec = _cols[i])
-end
-
-LAB = [L"$x_1$", L"$x_2$", L"$x_3$", L"$x_4$", L"$x_5$", L"$x_6$",]
-ax.legend(circ, LAB, ncol = 6, fontsize = 12, loc = "upper right")
+LAB = [L"$\xi^{(1)}$", L"$\xi^{(2)}$", L"$\xi^{(3)}$", L"$\xi^{(4)}$",
+    L"$\xi^{(5)}$", L"$\xi^{(6)}$"]
+ax.legend(circ, LAB, ncol = 6, loc = "upper right", columnspacing = 1.4)
 
 ax.set_xlabel(L"$t$")
-ax.set_ylabel(L"$x_i(t)$")
+ax.set_ylabel(L"$\xi^{(i)}(t)$")
 ax.set_xlim(-0.3, tmax - 0.7)
 ax.set_ylim(-0.02, 0.55)
 
-fig.savefig("test/figures/fig_SLS_1dom_Leslie_traj.png",
-    transparent = false, bbox_inches = "tight")
+fig.savefig("./figures/fig_SLS_1dom_Leslie_traj.png", transparent = false,
+    bbox_inches = matplotlib.transforms.Bbox([[0.54, 0.05], [8.85, 4.25]]))
 
 end
