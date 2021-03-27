@@ -1,5 +1,9 @@
 [deps]
+CDDLib = "3391f64e-dcde-5f30-b752-e11513730f60"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
+LazySets = "b4f0291d-fe17-52bc-9479-3d1a343d9043"
 MosekTools = "1ec41992-ff65-5c91-ac43-2df89e9693a4"
+Polyhedra = "67491407-f73d-577b-9b50-8179a7c68029"
 PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
 PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
