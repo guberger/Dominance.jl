@@ -1,4 +1,4 @@
-include("../src/dominance.jl")
+include("../src/Dominance.jl")
 
 module TestMain
 
