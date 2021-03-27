@@ -5,7 +5,7 @@ using StaticArrays
 
 @enum INCL_MODE INNER OUTER
 
-include("Graph.jl")
+include("graph.jl")
 include("system.jl")
 include("abstraction.jl")
 include("macros.jl")
