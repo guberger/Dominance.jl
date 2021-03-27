@@ -1,7 +1,7 @@
 name = "Dominance Analysis"
-uuid = "generated uuid"
+uuid = "65fab9b8-0338-46d7-a721-d10f7715d495"
 authors = ["Your Name <and@email.address>"]
-version = "65fab9b8-0338-46d7-a721-d10f7715d495"
+version = "0.0.1"
 
 [deps]
 CDDLib = "3391f64e-dcde-5f30-b752-e11513730f60"
