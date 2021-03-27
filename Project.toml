@@ -1,4 +1,4 @@
-name = "Dominance Analysis"
+name = "Dominance"
 uuid = "65fab9b8-0338-46d7-a721-d10f7715d495"
 authors = ["Your Name <and@email.address>"]
 version = "0.0.1"
