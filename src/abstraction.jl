@@ -176,27 +176,24 @@ function enum_pos(domain::Domain)
     return domain.elems
 end
 
-## Symbolic model
+## Symbolic
 
-struct SymbolicModel{N,D<:Domain{N}}
-    domain::D
-    autom::Automaton
+struct Symbolic{N}
     pos2int::Dict{NTuple{N,Int},Int}
     int2pos::Vector{NTuple{N,Int}}
 end
 
-function SymbolicModel(domain)
+function Symbolic(domain)
     ncell = get_ncells(domain)
     int2pos = [pos for pos in enum_pos(domain)]
     pos2int = Dict((pos, i) for (i, pos) in enumerate(enum_pos(domain)))
-    autom = Automaton(ncell, ncell)
-    return SymbolicModel(domain, autom, pos2int, int2pos)
+    return Symbolic(pos2int, int2pos)
 end
 
-function get_pos_by_state(symmodel, state)
-    return symmodel.int2pos[state]
+function get_pos_by_state(symb, state)
+    return symb.int2pos[state]
 end
 
-function get_state_by_pos(symmodel, pos)
-    return symmodel.pos2int[pos]
+function get_state_by_pos(symb, pos)
+    return symb.pos2int[pos]
 end

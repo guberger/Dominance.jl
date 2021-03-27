@@ -1,18 +1,19 @@
 ## Build symbolic model
 
-# Assumes that automaton is "empty"
-function symmodel_from_system!(symmodel::SymbolicModel{N}, sys) where N
-    println("symmodel_from_system! started")
-    domain = symmodel.domain
+function symbolic_model(domain::Domain{N,T}, sys) where {N,T}
+    println("symbolic_model! started")
+    symb = Symbolic(domain)
+    ncell = get_ncells(domain)
+    graph = Graph(ncell)
     r = domain.grid.h/2
     _H_ = SMatrix{N,N}(I).*r
     _ONE_ = ones(SVector{N})
     ntrans = 0
     Fe = sys.error_map(norm(r, Inf))
-    Fr = typeof(r)(r .+ Fe)
+    Fr = SVector{N,T}(r .+ Fe)
 
     for pos in enum_pos(domain)
-        source = get_state_by_pos(symmodel, pos)
+        source = get_state_by_pos(symb, pos)
         x = get_coord_by_pos(domain.grid, pos)
         Fx, DFx = sys.linsys_map(x, _H_)
         A = inv(DFx)
@@ -22,63 +23,62 @@ function symmodel_from_system!(symmodel::SymbolicModel{N}, sys) where N
         rad = abs.(DFx)*_ONE_ .+ Fe
         rectI = get_pos_lims_outer(domain.grid, HyperRectangle(Fx - rad, Fx + rad))
         # HyperRectangle(Fx - rad, Fx + rad) can be smaller than HP. Therefore,
-        # in the plots, we may have cells not in symmodel while the 1st-order approx
+        # in the plots, we may have cells not in symb while the 1st-order approx
         # cover them.
         fpos_iter = Iterators.product(_ranges(rectI)...)
         for fpos in fpos_iter
             dx = get_coord_by_pos(domain.grid, fpos) - Fx
             !(dx in HP) && continue
             if fpos in domain
-                target = get_state_by_pos(symmodel, fpos)
-                add_transition!(symmodel.autom, (source, source, target))
+                target = get_state_by_pos(symb, fpos)
+                add_transition!(graph, source, target)
                 ntrans += 1
             end
         end
     end
 
-    println("symmodel_from_system! terminated with success: $(ntrans) transitions created")
+    println("symbolic_model! terminated with success: $(ntrans) transitions created")
+    return graph, symb
 end
 
-## Essential automaton
+# Essential graph
 
-function viable_controller!(contr, autom, viablelist)
-    println("invariant_controller! started")
-    nstates = autom.nstates
+function viable_states!(statelist, graph::Graph{S}, viablelist) where S
+    println("viable_states! started")
     viableset = Set(viablelist)
-    unviableset = Set{Int}()
-    pairstable = [false for i in 1:nstates, j in 1:nstates]
-
-    for trans in enum_transitions(autom)
-        if trans[1] in viableset && trans[3] in viableset
-            pairstable[trans[1], trans[3]] = true
+    npre = Dict((state, 0) for state in enum_states(graph))
+    npost = Dict((state, 0) for state in enum_states(graph))
+    for trans in enum_transitions(graph)
+        if trans.source ∈ viableset && trans.target ∈ viableset
+            npre[trans.target] += 1
+            npost[trans.source] += 1
         end
     end
 
+    transset = Set(enum_transitions(graph))
+    leavingtransset = Set{Transition{S}}()
     while true
-        empty!(unviableset)
-        for state in viableset
-            targets = view(pairstable, state, :)
-            if !any(targets)
-                pairstable[:, state] .= false
-                push!(unviableset, state)
-            end
-            sources = view(pairstable, :, state)
-            if !any(sources)
-                pairstable[state, :] .= false
-                push!(unviableset, state)
+        empty!(leavingtransset)
+        for trans in transset
+            if npre[trans.source] < 1 || npost[trans.target] < 1
+                push!(leavingtransset, trans)
+                npre[trans.target] -= 1
+                npost[trans.source] -= 1
             end
         end
-        if isempty(unviableset)
+        if isempty(leavingtransset)
             break
         end
-        setdiff!(viableset, unviableset)
+        setdiff!(transset, leavingtransset)
     end
 
-    for state in viableset
-        add_state!(contr, state)
+    nviable = 0
+    for state in keys(npre)
+        if npre[state] > 0 && npost[state] > 0
+            push!(statelist, state)
+            nviable += 1
+        end
     end
 
-    nviable = length(viableset)
-
-    println("viable_controller! terminated with success: $(nviable) viable states added")
+    println("viable_states! terminated with success: $(nviable) viable states added")
 end

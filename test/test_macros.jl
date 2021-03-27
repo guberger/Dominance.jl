@@ -11,7 +11,7 @@ DO = Main.Dominance
 sleep(0.1) # used for good printing
 println("Started test")
 
-@testset "Macros: symmodel_from_system!" begin
+@testset "Macros: symbolic_model" begin
 lb = SVector(0.0, 0.0)
 ub = SVector(10.0, 11.0)
 x0 = SVector(0.0, 0.0)
@@ -28,21 +28,20 @@ bound_DF = 1.0
 bound_DDF = 1.0
 
 sys = DO.ContSystemRK4(tstep, F_sys, DF_sys, bound_DF, bound_DDF, nsys)
-symmodel = DO.SymbolicModel(domain)
-DO.symmodel_from_system!(symmodel, sys)
-@test DO.get_ntransitions(symmodel.autom) == 589
+graph, symb = DO.symbolic_model(domain, sys)
+@test DO.get_ntransitions(graph) == 589
 
 pos = (1, 2)
 x = DO.get_coord_by_pos(grid, pos)
-source = DO.get_state_by_pos(symmodel, pos)
+source = DO.get_state_by_pos(symb, pos)
 
 dom1 = DO.Domain(grid)
 DO.add_pos!(dom1, pos)
 dom2 = DO.Domain(grid)
-translist = Tuple{Int,Int,Int}[]
-DO.compute_post!(translist, symmodel.autom, source)
+translist = DO.Transition{Int}[]
+DO.compute_post!(translist, graph, source)
 for trans in translist
-    DO.add_pos!(dom2, DO.get_pos_by_state(symmodel, trans[3]))
+    DO.add_pos!(dom2, DO.get_pos_by_state(symb, trans.target))
 end
 
 @static if get(ENV, "CI", "false") == "false"
@@ -75,21 +74,20 @@ DF_sys(x) = U*SMatrix{2,2}(1/(1 + x[1]^2), 0, 0, 1/(1 + x[2]^2))
 bound_DDF = norm(U, Inf)*3*sqrt(3)/8
 
 sys = DO.DiscSystem(F_sys, DF_sys, bound_DDF)
-symmodel = DO.SymbolicModel(domain)
-DO.symmodel_from_system!(symmodel, sys)
-@test DO.get_ntransitions(symmodel.autom) == 717
+graph, symb = DO.symbolic_model(domain, sys)
+@test DO.get_ntransitions(graph) == 717
 
 pos = (1, 2)
 x = DO.get_coord_by_pos(grid, pos)
-source = DO.get_state_by_pos(symmodel, pos)
+source = DO.get_state_by_pos(symb, pos)
 
 dom1 = DO.Domain(grid)
 DO.add_pos!(dom1, pos)
 dom2 = DO.Domain(grid)
-translist = Tuple{Int,Int,Int}[]
-DO.compute_post!(translist, symmodel.autom, source)
+translist = DO.Transition{Int}[]
+DO.compute_post!(translist, graph, source)
 for trans in translist
-    DO.add_pos!(dom2, DO.get_pos_by_state(symmodel, trans[3]))
+    DO.add_pos!(dom2, DO.get_pos_by_state(symb, trans.target))
 end
 
 @static if get(ENV, "CI", "false") == "false"
@@ -108,32 +106,31 @@ end
 end
 end
 
-@testset "Macros: viable_controller!" begin
+@testset "Macros: viable_states!" begin
 nstates = 10
-nsymbols = 5
-autom = DO.Automaton(nstates, nsymbols)
+graph = DO.Graph(nstates)
 
-DO.add_transition!(autom, (5, 1, 9))
-DO.add_transition!(autom, (5, 1, 8))
-DO.add_transition!(autom, (5, 1, 3))
-DO.add_transition!(autom, (8, 1, 3))
-DO.add_transition!(autom, (5, 3, 5))
-DO.add_transition!(autom, (8, 1, 5))
-DO.add_transition!(autom, (1, 1, 2))
-DO.add_transition!(autom, (2, 1, 4))
-DO.add_transition!(autom, (4, 1, 6))
-DO.add_transition!(autom, (6, 1, 7))
-DO.add_transition!(autom, (7, 1, 8))
-DO.add_transition!(autom, (9, 1, 10))
-@test DO.get_ntransitions(autom) == 12
+DO.add_transition!(graph, 5, 9)
+DO.add_transition!(graph, 5, 8)
+DO.add_transition!(graph, 5, 3)
+DO.add_transition!(graph, 8, 3)
+DO.add_transition!(graph, 5, 5)
+DO.add_transition!(graph, 8, 5)
+DO.add_transition!(graph, 1, 2)
+DO.add_transition!(graph, 2, 4)
+DO.add_transition!(graph, 4, 6)
+DO.add_transition!(graph, 6, 7)
+DO.add_transition!(graph, 7, 8)
+DO.add_transition!(graph, 9, 10)
+@test DO.get_ntransitions(graph) == 12
 
-viablelist = 1:nstates
-contr = DO.Controller()
-DO.viable_controller!(contr, autom, viablelist)
-@test Set(DO.enum_states(contr)) == Set([5, 8])
+viablelist = 1:DO.get_nstates(graph)
+statelist = Int[]
+DO.viable_states!(statelist, graph, viablelist)
+@test Set((statelist)) == Set([5, 8])
 end
 
-@testset "Macros: symmodel_from_system! + viabel_controller" begin
+@testset "Macros: symbolic_model + viabel_statelistoller" begin
 lb = SVector(-7.0, -7.0)
 ub = SVector(7.0, 7.0)
 x0 = SVector(0.0, 0.0)
@@ -150,25 +147,25 @@ DF_sys(x) = U*SMatrix{2,2}(1/(1 + x[1]^2), 0, 0, 1/(1 + x[2]^2))
 bound_DDF = norm(U, Inf)*3*sqrt(3)/8
 
 sys = DO.DiscSystem(F_sys, DF_sys, bound_DDF)
-symmodel = DO.SymbolicModel(domain)
-DO.symmodel_from_system!(symmodel, sys)
-@test DO.get_ntransitions(symmodel.autom) == 23468
+graph, symb = DO.symbolic_model(domain, sys)
+DO.symbolic_model(domain, sys)
+@test DO.get_ntransitions(graph) == 23468
 
 viablelist = Int[]
 for pos in DO.enum_pos(domain)
-    push!(viablelist, DO.get_state_by_pos(symmodel, pos))
+    push!(viablelist, DO.get_state_by_pos(symb, pos))
 end
 
-contr = DO.Controller()
-DO.viable_controller!(contr, symmodel.autom, viablelist)
-@test length(collect(DO.enum_states(contr))) == 292
+statelist = Int[]
+DO.viable_states!(statelist, graph, viablelist)
+@test length(statelist) == 292
 
 pos = (1, 2)
 x = DO.get_coord_by_pos(grid, pos)
 
 dom1 = DO.Domain(grid)
-for state in DO.enum_states(contr)
-    DO.add_pos!(dom1, DO.get_pos_by_state(symmodel, state))
+for state in statelist
+    DO.add_pos!(dom1, DO.get_pos_by_state(symb, state))
 end
 
 @static if get(ENV, "CI", "false") == "false"
