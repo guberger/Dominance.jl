@@ -22,10 +22,6 @@ function Base.issubset(a::HyperRectangle, b::HyperRectangle)
     return all(a.lb .>= b.lb) && all(a.ub .<= b.ub)
 end
 
-function _ranges(rect::HyperRectangle{NTuple{N,T}}) where {N,T}
-    return ntuple(i -> UnitRange(rect.lb[i], rect.ub[i]), Val(N))
-end
-
 # Polyhedron defined by {x : |[Ax]_i| ≦ b_i ∀ i}
 struct CenteredPolyhedron{MT,VT}
     A::MT
@@ -36,3 +32,17 @@ function Base.in(x, H::CenteredPolyhedron)
     return all(abs.(H.A*x) .<= H.b)
 end
 # all(x .<= y) is (surprisingly) faster than all(i -> x[i] <= y[i], eachindex(x))
+
+struct HyperRange{N,S<:AbstractRange}
+    ranges::NTuple{N,S}
+end
+
+function HyperRange(lb::NTuple{N,T}, ub::NTuple{N,T}) where {N,T}
+    return HyperRange(ntuple(i -> UnitRange(lb[i], ub[i]), Val(N)))
+end
+
+function Base.in(x, rng::HyperRange)
+    return all(x .∈ rng.ranges)
+end
+
+enum_elems(rng::HyperRange) = Iterators.product(rng.ranges...)

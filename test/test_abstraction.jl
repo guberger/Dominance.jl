@@ -55,7 +55,7 @@ DO.add_subset!(domain2, domain1, DO.HyperRectangle(SVector(0.0, 0.0), SVector(5.
 end
 end
 
-@testset "Abstraction: Symbolic" begin
+@testset "Abstraction: Indexing" begin
 x0 = SVector(0.0, 0.0)
 h = SVector(1.0, 2.0)
 grid = DO.Grid(x0, h)
@@ -63,16 +63,16 @@ domain = DO.Domain(grid)
 DO.add_pos!(domain, (1, 1))
 DO.add_pos!(domain, (2, 2))
 
-symb = DO.Symbolic(domain)
-stateslist = Int[]
-push!(stateslist, DO.get_state_by_pos(symb, (1, 1)))
-push!(stateslist, DO.get_state_by_pos(symb, (2, 2)))
-sort!(stateslist)
-@test all(stateslist .== [1, 2])
+idxn = DO.Indexing(domain)
+indexlist = Int[]
+push!(indexlist, DO.get_index_by_pos(idxn, (1, 1)))
+push!(indexlist, DO.get_index_by_pos(idxn, (2, 2)))
+sort!(indexlist)
+@test all(indexlist .== [1, 2])
 
 poslist = Tuple{Int, Int}[]
-push!(poslist, DO.get_pos_by_state(symb, 1))
-push!(poslist, DO.get_pos_by_state(symb, 2))
+push!(poslist, DO.get_pos_by_index(idxn, 1))
+push!(poslist, DO.get_pos_by_index(idxn, 2))
 sort!(poslist)
 @test all(poslist .== [(1, 1), (2, 2)])
 end

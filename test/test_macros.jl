@@ -28,20 +28,20 @@ bound_DF = 1.0
 bound_DDF = 1.0
 
 sys = DO.ContSystemRK4(tstep, F_sys, DF_sys, bound_DF, bound_DDF, nsys)
-graph, symb = DO.symbolic_model(domain, sys)
-@test DO.get_ntransitions(graph) == 589
+graph, idxn = DO.symbolic_model(domain, sys)
+@test DO.get_nedges(graph) == 589
 
 pos = (1, 2)
 x = DO.get_coord_by_pos(grid, pos)
-source = DO.get_state_by_pos(symb, pos)
+source = DO.get_index_by_pos(idxn, pos)
 
 dom1 = DO.Domain(grid)
 DO.add_pos!(dom1, pos)
 dom2 = DO.Domain(grid)
-translist = DO.Transition{Int}[]
-DO.compute_post!(translist, graph, source)
-for trans in translist
-    DO.add_pos!(dom2, DO.get_pos_by_state(symb, trans.target))
+edgelist = DO.Edge{Int}[]
+DO.compute_post!(edgelist, graph, source)
+for edge in edgelist
+    DO.add_pos!(dom2, DO.get_pos_by_index(idxn, edge.target))
 end
 
 @static if get(ENV, "CI", "false") == "false"
@@ -74,20 +74,20 @@ DF_sys(x) = U*SMatrix{2,2}(1/(1 + x[1]^2), 0, 0, 1/(1 + x[2]^2))
 bound_DDF = norm(U, Inf)*3*sqrt(3)/8
 
 sys = DO.DiscSystem(F_sys, DF_sys, bound_DDF)
-graph, symb = DO.symbolic_model(domain, sys)
-@test DO.get_ntransitions(graph) == 717
+graph, idxn = DO.symbolic_model(domain, sys)
+@test DO.get_nedges(graph) == 717
 
 pos = (1, 2)
 x = DO.get_coord_by_pos(grid, pos)
-source = DO.get_state_by_pos(symb, pos)
+source = DO.get_index_by_pos(idxn, pos)
 
 dom1 = DO.Domain(grid)
 DO.add_pos!(dom1, pos)
 dom2 = DO.Domain(grid)
-translist = DO.Transition{Int}[]
-DO.compute_post!(translist, graph, source)
-for trans in translist
-    DO.add_pos!(dom2, DO.get_pos_by_state(symb, trans.target))
+edgelist = DO.Edge{Int}[]
+DO.compute_post!(edgelist, graph, source)
+for edge in edgelist
+    DO.add_pos!(dom2, DO.get_pos_by_index(idxn, edge.target))
 end
 
 @static if get(ENV, "CI", "false") == "false"
@@ -108,21 +108,21 @@ end
 
 @testset "Macros: viable_states!" begin
 nstates = 10
-graph = DO.Graph(nstates)
+graph = DO.Graph(1:nstates)
 
-DO.add_transition!(graph, 5, 9)
-DO.add_transition!(graph, 5, 8)
-DO.add_transition!(graph, 5, 3)
-DO.add_transition!(graph, 8, 3)
-DO.add_transition!(graph, 5, 5)
-DO.add_transition!(graph, 8, 5)
-DO.add_transition!(graph, 1, 2)
-DO.add_transition!(graph, 2, 4)
-DO.add_transition!(graph, 4, 6)
-DO.add_transition!(graph, 6, 7)
-DO.add_transition!(graph, 7, 8)
-DO.add_transition!(graph, 9, 10)
-@test DO.get_ntransitions(graph) == 12
+DO.add_edge!(graph, 5, 9)
+DO.add_edge!(graph, 5, 8)
+DO.add_edge!(graph, 5, 3)
+DO.add_edge!(graph, 8, 3)
+DO.add_edge!(graph, 5, 5)
+DO.add_edge!(graph, 8, 5)
+DO.add_edge!(graph, 1, 2)
+DO.add_edge!(graph, 2, 4)
+DO.add_edge!(graph, 4, 6)
+DO.add_edge!(graph, 6, 7)
+DO.add_edge!(graph, 7, 8)
+DO.add_edge!(graph, 9, 10)
+@test DO.get_nedges(graph) == 12
 
 viablelist = 1:DO.get_nstates(graph)
 statelist = Int[]
@@ -147,13 +147,13 @@ DF_sys(x) = U*SMatrix{2,2}(1/(1 + x[1]^2), 0, 0, 1/(1 + x[2]^2))
 bound_DDF = norm(U, Inf)*3*sqrt(3)/8
 
 sys = DO.DiscSystem(F_sys, DF_sys, bound_DDF)
-graph, symb = DO.symbolic_model(domain, sys)
+graph, idxn = DO.symbolic_model(domain, sys)
 DO.symbolic_model(domain, sys)
-@test DO.get_ntransitions(graph) == 23468
+@test DO.get_nedges(graph) == 23468
 
 viablelist = Int[]
 for pos in DO.enum_pos(domain)
-    push!(viablelist, DO.get_state_by_pos(symb, pos))
+    push!(viablelist, DO.get_index_by_pos(idxn, pos))
 end
 
 statelist = Int[]
@@ -165,7 +165,7 @@ x = DO.get_coord_by_pos(grid, pos)
 
 dom1 = DO.Domain(grid)
 for state in statelist
-    DO.add_pos!(dom1, DO.get_pos_by_state(symb, state))
+    DO.add_pos!(dom1, DO.get_pos_by_index(idxn, state))
 end
 
 @static if get(ENV, "CI", "false") == "false"

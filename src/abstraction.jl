@@ -1,42 +1,3 @@
-## Polyhedron
-
-struct HyperRectangle{VT}
-    lb::VT
-    ub::VT
-end
-
-function Base.in(x, rect::HyperRectangle)
-    return all(rect.lb .<= x .<= rect.ub)
-end
-# all(x .<= y) is (surprisingly) faster than all(i -> x[i] <= y[i], eachindex(x))
-
-function Base.isempty(rect::HyperRectangle)
-    return any(rect.lb .> rect.ub)
-end
-
-function Base.intersect(a::HyperRectangle, b::HyperRectangle)
-    return HyperRectangle(max.(a.lb, b.lb), min.(a.ub, b.ub))
-end
-
-function Base.issubset(a::HyperRectangle, b::HyperRectangle)
-    return all(a.lb .>= b.lb) && all(a.ub .<= b.ub)
-end
-
-function _ranges(rect::HyperRectangle{NTuple{N,T}}) where {N,T}
-    return ntuple(i -> UnitRange(rect.lb[i], rect.ub[i]), Val(N))
-end
-
-# Polyhedron defined by {x : |[Ax]_i| ≦ b_i ∀ i}
-struct CenteredPolyhedron{MT,VT}
-    A::MT
-    b::VT
-end
-
-function Base.in(x, H::CenteredPolyhedron)
-    return all(abs.(H.A*x) .<= H.b)
-end
-# all(x .<= y) is (surprisingly) faster than all(i -> x[i] <= y[i], eachindex(x))
-
 ## Grid
 
 struct Grid{N,T}
@@ -55,13 +16,13 @@ end
 function get_pos_lims_inner(grid::Grid{N}, rect) where N
     lbI = ntuple(i -> ceil(Int, (rect.lb[i] - grid.orig[i])/grid.h[i] + 0.5), Val(N))
     ubI = ntuple(i -> floor(Int, (rect.ub[i] - grid.orig[i])/grid.h[i] - 0.5), Val(N))
-    return HyperRectangle(lbI, ubI)
+    return HyperRange(lbI, ubI)
 end
 
 function get_pos_lims_outer(grid::Grid{N}, rect) where N
     lbI = ntuple(i -> ceil(Int, (rect.lb[i] - grid.orig[i])/grid.h[i] - 0.5), Val(N))
     ubI = ntuple(i -> floor(Int, (rect.ub[i] - grid.orig[i])/grid.h[i] + 0.5), Val(N))
-    return HyperRectangle(lbI, ubI)
+    return HyperRange(lbI, ubI)
 end
 
 function get_pos_lims(grid, rect, incl_mode::INCL_MODE)
@@ -92,15 +53,15 @@ function add_coord!(domain, x)
 end
 
 function add_set!(domain, rect::HyperRectangle, incl_mode::INCL_MODE)
-    rectI = get_pos_lims(domain.grid, rect, incl_mode)
-    for pos in Iterators.product(_ranges(rectI)...)
+    rng = get_pos_lims(domain.grid, rect, incl_mode)
+    for pos in enum_elems(rng)
         add_pos!(domain, pos)
     end
 end
 
 function add_subset!(domain1, domain2, rect::HyperRectangle, incl_mode::INCL_MODE)
-    rectI = get_pos_lims(domain1.grid, rect, incl_mode)
-    pos_iter = Iterators.product(_ranges(rectI)...)
+    rng = get_pos_lims(domain1.grid, rect, incl_mode)
+    pos_iter = enum_elems(rng)
     if length(pos_iter) < get_ncells(domain2)
         for pos in pos_iter
             if pos ∈ domain2
@@ -109,7 +70,7 @@ function add_subset!(domain1, domain2, rect::HyperRectangle, incl_mode::INCL_MOD
         end
     else
         for pos in enum_pos(domain2)
-            if pos ∈ rectI
+            if pos ∈ rng
                 add_pos!(domain1, pos)
             end
         end
@@ -125,15 +86,15 @@ function remove_coord!(domain, x)
 end
 
 function remove_set!(domain, rect::HyperRectangle, incl_mode::INCL_MODE)
-    rectI = get_pos_lims(domain.grid, rect, incl_mode)
-    pos_iter = Iterators.product(_ranges(rectI)...)
+    rng = get_pos_lims(domain.grid, rect, incl_mode)
+    pos_iter = enum_elems(rng)
     if length(pos_iter) < get_ncells(domain)
         for pos in pos_iter
             remove_pos!(domain, pos)
         end
     else
         for pos in enum_pos(domain)
-            if pos ∈ rectI
+            if pos ∈ rng
                 remove_pos!(domain, pos)
             end
         end
@@ -176,24 +137,24 @@ function enum_pos(domain::Domain)
     return domain.elems
 end
 
-## Symbolic
+## Indexing
 
-struct Symbolic{N}
-    pos2int::Dict{NTuple{N,Int},Int}
-    int2pos::Vector{NTuple{N,Int}}
+struct Indexing{N}
+    pos2ind::Dict{NTuple{N,Int},Int}
+    ind2pos::Vector{NTuple{N,Int}}
 end
 
-function Symbolic(domain)
+function Indexing(domain)
     ncell = get_ncells(domain)
-    int2pos = [pos for pos in enum_pos(domain)]
-    pos2int = Dict((pos, i) for (i, pos) in enumerate(enum_pos(domain)))
-    return Symbolic(pos2int, int2pos)
+    ind2pos = [pos for pos in enum_pos(domain)]
+    pos2ind = Dict((pos, i) for (i, pos) in enumerate(enum_pos(domain)))
+    return Indexing(pos2ind, ind2pos)
 end
 
-function get_pos_by_state(symb, state)
-    return symb.int2pos[state]
+function get_pos_by_index(idxn, index)
+    return idxn.ind2pos[index]
 end
 
-function get_state_by_pos(symb, pos)
-    return symb.pos2int[pos]
+function get_index_by_pos(idxn, pos)
+    return idxn.pos2ind[pos]
 end

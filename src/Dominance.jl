@@ -7,6 +7,7 @@ using StaticArrays
 
 include("graph.jl")
 include("system.jl")
+include("set.jl")
 include("abstraction.jl")
 include("macros.jl")
 
