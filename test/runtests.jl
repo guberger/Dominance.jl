@@ -1,3 +1,4 @@
+include("test_mapping.jl")
 include("test_graph.jl")
 include("test_system.jl")
 include("test_abstraction.jl")

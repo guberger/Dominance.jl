@@ -2,7 +2,7 @@
 
 function symbolic_model(domain::Domain{N,T}, sys) where {N,T}
     println("symbolic_model! started")
-    idxn = Indexing(domain)
+    idxn = Indexing(enum_pos(domain))
     graph = Graph(1:get_ncells(domain))
     r = domain.grid.h/2
     _H_ = SMatrix{N,N}(I).*r
@@ -12,7 +12,7 @@ function symbolic_model(domain::Domain{N,T}, sys) where {N,T}
     Fr = SVector{N,T}(r .+ Fe)
 
     for pos in enum_pos(domain)
-        source = get_index_by_pos(idxn, pos)
+        source = get_index_by_elem(idxn, pos)
         x = get_coord_by_pos(domain.grid, pos)
         Fx, DFx = sys.linsys_map(x, _H_)
         A = inv(DFx)
@@ -28,7 +28,7 @@ function symbolic_model(domain::Domain{N,T}, sys) where {N,T}
             dx = get_coord_by_pos(domain.grid, fpos) - Fx
             !(dx in HP) && continue
             if fpos in domain
-                target = get_index_by_pos(idxn, fpos)
+                target = get_index_by_elem(idxn, fpos)
                 add_edge!(graph, source, target)
                 nedges += 1
             end

@@ -33,7 +33,7 @@ graph, idxn = DO.symbolic_model(domain, sys)
 
 pos = (1, 2)
 x = DO.get_coord_by_pos(grid, pos)
-source = DO.get_index_by_pos(idxn, pos)
+source = DO.get_index_by_elem(idxn, pos)
 
 dom1 = DO.Domain(grid)
 DO.add_pos!(dom1, pos)
@@ -41,7 +41,7 @@ dom2 = DO.Domain(grid)
 edgelist = DO.Edge{Int}[]
 DO.compute_post!(edgelist, graph, source)
 for edge in edgelist
-    DO.add_pos!(dom2, DO.get_pos_by_index(idxn, edge.target))
+    DO.add_pos!(dom2, DO.get_elem_by_index(idxn, edge.target))
 end
 
 @static if get(ENV, "CI", "false") == "false"
@@ -79,7 +79,7 @@ graph, idxn = DO.symbolic_model(domain, sys)
 
 pos = (1, 2)
 x = DO.get_coord_by_pos(grid, pos)
-source = DO.get_index_by_pos(idxn, pos)
+source = DO.get_index_by_elem(idxn, pos)
 
 dom1 = DO.Domain(grid)
 DO.add_pos!(dom1, pos)
@@ -87,7 +87,7 @@ dom2 = DO.Domain(grid)
 edgelist = DO.Edge{Int}[]
 DO.compute_post!(edgelist, graph, source)
 for edge in edgelist
-    DO.add_pos!(dom2, DO.get_pos_by_index(idxn, edge.target))
+    DO.add_pos!(dom2, DO.get_elem_by_index(idxn, edge.target))
 end
 
 @static if get(ENV, "CI", "false") == "false"
@@ -153,7 +153,7 @@ DO.symbolic_model(domain, sys)
 
 viablelist = Int[]
 for pos in DO.enum_pos(domain)
-    push!(viablelist, DO.get_index_by_pos(idxn, pos))
+    push!(viablelist, DO.get_index_by_elem(idxn, pos))
 end
 
 statelist = Int[]
@@ -165,7 +165,7 @@ x = DO.get_coord_by_pos(grid, pos)
 
 dom1 = DO.Domain(grid)
 for state in statelist
-    DO.add_pos!(dom1, DO.get_pos_by_index(idxn, state))
+    DO.add_pos!(dom1, DO.get_elem_by_index(idxn, state))
 end
 
 @static if get(ENV, "CI", "false") == "false"

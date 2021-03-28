@@ -136,25 +136,3 @@ end
 function enum_pos(domain::Domain)
     return domain.elems
 end
-
-## Indexing
-
-struct Indexing{N}
-    pos2ind::Dict{NTuple{N,Int},Int}
-    ind2pos::Vector{NTuple{N,Int}}
-end
-
-function Indexing(domain)
-    ncell = get_ncells(domain)
-    ind2pos = [pos for pos in enum_pos(domain)]
-    pos2ind = Dict((pos, i) for (i, pos) in enumerate(enum_pos(domain)))
-    return Indexing(pos2ind, ind2pos)
-end
-
-function get_pos_by_index(idxn, index)
-    return idxn.ind2pos[index]
-end
-
-function get_index_by_pos(idxn, pos)
-    return idxn.pos2ind[pos]
-end

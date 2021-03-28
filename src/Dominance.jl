@@ -5,6 +5,7 @@ using StaticArrays
 
 @enum INCL_MODE INNER OUTER
 
+include("mapping.jl")
 include("graph.jl")
 include("system.jl")
 include("set.jl")
