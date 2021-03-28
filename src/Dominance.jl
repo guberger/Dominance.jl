@@ -11,6 +11,7 @@ include("graph.jl")
 include("system.jl")
 include("set.jl")
 include("abstraction.jl")
-include("macros.jl")
+include("symbolic_model.jl")
+include("viable_states.jl")
 
 end  # module Dominance
