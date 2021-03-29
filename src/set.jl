@@ -33,16 +33,7 @@ function Base.in(x, H::CenteredPolyhedron)
 end
 # all(x .<= y) is (surprisingly) faster than all(i -> x[i] <= y[i], eachindex(x))
 
-struct HyperRange{N,S<:AbstractRange}
-    ranges::NTuple{N,S}
+function hyper_range(lb::NTuple{N,T}, ub::NTuple{N,T}) where {N,T}
+    ranges = ntuple(i -> UnitRange(lb[i], ub[i]), Val(N))
+    return Iterators.product(ranges...)
 end
-
-function HyperRange(lb::NTuple{N,T}, ub::NTuple{N,T}) where {N,T}
-    return HyperRange(ntuple(i -> UnitRange(lb[i], ub[i]), Val(N)))
-end
-
-function Base.in(x, rng::HyperRange)
-    return all(x .∈ rng.ranges)
-end
-
-enum_elems(rng::HyperRange) = Iterators.product(rng.ranges...)

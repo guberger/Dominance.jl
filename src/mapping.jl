@@ -23,23 +23,3 @@ end
 function get_index_by_elem(idxn, elem)
     return idxn.elem2ind[elem]
 end
-
-# Fields
-
-struct Field{S,T}
-    elem2labels::Dict{S,Vector{T}}
-end
-
-function Field(::Type{S}, ::Type{T}) where {S,T}
-    return Field(Dict{S,Vector{T}}())
-end
-
-function get_labels(field::Field{S,T}, elem) where {S,T}
-    return get(field.elem2labels, elem, T[])
-end
-
-function add_label(field, elem, label)
-    labels = get_labels(field, elem)
-    push!(labels, label)
-    field.elem2labels[elem] = labels
-end

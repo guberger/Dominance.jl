@@ -38,7 +38,7 @@ source = DO.get_index_by_elem(idxn, pos)
 dom1 = DO.Domain(grid)
 DO.add_pos!(dom1, pos)
 dom2 = DO.Domain(grid)
-edgelist = DO.Edge{Int}[]
+edgelist = DO.Edge[]
 DO.compute_post!(edgelist, graph, source)
 for edge in edgelist
     DO.add_pos!(dom2, DO.get_elem_by_index(idxn, edge.target))
@@ -84,7 +84,7 @@ source = DO.get_index_by_elem(idxn, pos)
 dom1 = DO.Domain(grid)
 DO.add_pos!(dom1, pos)
 dom2 = DO.Domain(grid)
-edgelist = DO.Edge{Int}[]
+edgelist = DO.Edge[]
 DO.compute_post!(edgelist, graph, source)
 for edge in edgelist
     DO.add_pos!(dom2, DO.get_elem_by_index(idxn, edge.target))

@@ -16,13 +16,13 @@ end
 function get_pos_lims_inner(grid::Grid{N}, rect) where N
     lbI = ntuple(i -> ceil(Int, (rect.lb[i] - grid.orig[i])/grid.h[i] + 0.5), Val(N))
     ubI = ntuple(i -> floor(Int, (rect.ub[i] - grid.orig[i])/grid.h[i] - 0.5), Val(N))
-    return HyperRange(lbI, ubI)
+    return hyper_range(lbI, ubI)
 end
 
 function get_pos_lims_outer(grid::Grid{N}, rect) where N
     lbI = ntuple(i -> ceil(Int, (rect.lb[i] - grid.orig[i])/grid.h[i] - 0.5), Val(N))
     ubI = ntuple(i -> floor(Int, (rect.ub[i] - grid.orig[i])/grid.h[i] + 0.5), Val(N))
-    return HyperRange(lbI, ubI)
+    return hyper_range(lbI, ubI)
 end
 
 function get_pos_lims(grid, rect, incl_mode::INCL_MODE)
@@ -53,15 +53,14 @@ function add_coord!(domain, x)
 end
 
 function add_set!(domain, rect::HyperRectangle, incl_mode::INCL_MODE)
-    rng = get_pos_lims(domain.grid, rect, incl_mode)
-    for pos in enum_elems(rng)
+    pos_iter = get_pos_lims(domain.grid, rect, incl_mode)
+    for pos in pos_iter
         add_pos!(domain, pos)
     end
 end
 
 function add_subset!(domain1, domain2, rect::HyperRectangle, incl_mode::INCL_MODE)
-    rng = get_pos_lims(domain1.grid, rect, incl_mode)
-    pos_iter = enum_elems(rng)
+    pos_iter = get_pos_lims(domain1.grid, rect, incl_mode)
     if length(pos_iter) < get_ncells(domain2)
         for pos in pos_iter
             if pos ∈ domain2
@@ -70,7 +69,7 @@ function add_subset!(domain1, domain2, rect::HyperRectangle, incl_mode::INCL_MOD
         end
     else
         for pos in enum_pos(domain2)
-            if pos ∈ rng
+            if pos ∈ pos_iter
                 add_pos!(domain1, pos)
             end
         end
@@ -86,15 +85,14 @@ function remove_coord!(domain, x)
 end
 
 function remove_set!(domain, rect::HyperRectangle, incl_mode::INCL_MODE)
-    rng = get_pos_lims(domain.grid, rect, incl_mode)
-    pos_iter = enum_elems(rng)
+    pos_iter = get_pos_lims(domain.grid, rect, incl_mode)
     if length(pos_iter) < get_ncells(domain)
         for pos in pos_iter
             remove_pos!(domain, pos)
         end
     else
         for pos in enum_pos(domain)
-            if pos ∈ rng
+            if pos ∈ pos_iter
                 remove_pos!(domain, pos)
             end
         end

@@ -3,7 +3,7 @@
 function symbolic_model(domain::Domain{N,T}, sys) where {N,T}
     println("symbolic_model! started")
     idxn = Indexing(enum_pos(domain))
-    graph = Graph(1:get_ncells(domain))
+    graph = Graph(get_ncells(domain))
     r = domain.grid.h/2
     _H_ = SMatrix{N,N}(I).*r
     _ONE_ = ones(SVector{N})
@@ -20,11 +20,11 @@ function symbolic_model(domain::Domain{N,T}, sys) where {N,T}
         HP = CenteredPolyhedron(A, b)
         # TODO: can we improve abs.(DFx)*_ONE_?
         rad = abs.(DFx)*_ONE_ .+ Fe
-        rng = get_pos_lims_outer(domain.grid, HyperRectangle(Fx - rad, Fx + rad))
+        fpos_iter = get_pos_lims_outer(domain.grid, HyperRectangle(Fx - rad, Fx + rad))
         # HyperRectangle(Fx - rad, Fx + rad) can be smaller than HP. Therefore,
         # in the plots, we may have cells not in idxn while the 1st-order approx
         # cover them.
-        for fpos in enum_elems(rng)
+        for fpos in fpos_iter
             dx = get_coord_by_pos(domain.grid, fpos) - Fx
             !(dx in HP) && continue
             if fpos in domain

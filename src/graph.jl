@@ -1,21 +1,21 @@
 ## Graph
 
-struct Edge{S}
-    source::S
-    target::S
+struct Edge
+    source::Int
+    target::Int
 end
 
-mutable struct Graph{S,C}
-    states::C
-    edges::Set{Edge{S}}
+struct Graph
+    nstates::Int
+    edges::Set{Edge}
 end
 
-function Graph(states::UnitRange{S}) where S
-    return Graph(states, Set{Edge{S}}())
+function Graph(nstates)
+    return Graph(nstates, Set{Edge}())
 end
 
 function get_nstates(graph)
-    return length(graph.states)
+    return graph.nstates
 end
 
 function get_nedges(graph)
@@ -25,14 +25,14 @@ end
 # In add_edge:
 # Do not check that source, target are "inbounds"
 # Assumes not add twice same transition...
-function add_edge!(graph::Graph{S}, source::S, target::S) where S
+function add_edge!(graph, source, target)
     push!(graph.edges, Edge(source, target))
 end
 
 Base.empty!(graph::Graph) = empty!(graph.edges)
 
 function enum_states(graph)
-    return graph.states
+    return 1:graph.nstates
 end
 
 function enum_edges(graph)

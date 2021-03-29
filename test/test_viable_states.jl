@@ -13,7 +13,7 @@ println("Started test")
 
 @testset "viable_states!" begin
 nstates = 10
-graph = DO.Graph(1:nstates)
+graph = DO.Graph(nstates)
 
 DO.add_edge!(graph, 5, 9)
 DO.add_edge!(graph, 5, 8)

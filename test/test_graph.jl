@@ -11,7 +11,7 @@ println("Started test")
 
 @testset "Graph" begin
 nstates = 10
-graph = DO.Graph(1:nstates)
+graph = DO.Graph(nstates)
 
 DO.add_edge!(graph, 5, 9)
 DO.add_edge!(graph, 5, 8)
@@ -21,7 +21,8 @@ DO.add_edge!(graph, 5, 5)
 DO.add_edge!(graph, 8, 3)
 @test DO.get_nedges(graph) == 5
 @test length(collect(DO.enum_edges(graph))) == 5
-edgelist = DO.Edge{Int}[]
+@test length(collect(DO.enum_states(graph))) == 10
+edgelist = DO.Edge[]
 DO.compute_post!(edgelist, graph, 5)
 @test Set(edgelist) == Set(map(x -> DO.Edge(x...), [(5, 9), (5, 8), (5, 3), (5, 5)]))
 empty!(edgelist)

@@ -1,10 +1,10 @@
 # Essential graph
 
-function viable_states!(statelist, graph::Graph{S}, viablelist) where S
+function viable_states!(statelist, graph, viablelist)
     println("viable_states! started")
     viableset = Set(viablelist)
-    npre = Dict((state, 0) for state in enum_states(graph))
-    npost = Dict((state, 0) for state in enum_states(graph))
+    npre = zeros(get_nstates(graph))
+    npost = zeros(get_nstates(graph))
     for edge in enum_edges(graph)
         if edge.source ∈ viableset && edge.target ∈ viableset
             npre[edge.target] += 1
@@ -13,7 +13,7 @@ function viable_states!(statelist, graph::Graph{S}, viablelist) where S
     end
 
     valid_edgeset = Set(enum_edges(graph))
-    wrong_edgeset = Set{Edge{S}}()
+    wrong_edgeset = Set{Edge}()
     while true
         empty!(wrong_edgeset)
         for edge in valid_edgeset

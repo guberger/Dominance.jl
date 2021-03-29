@@ -27,18 +27,6 @@ sort!(elemlist)
 @test all(elemlist .== [(1, 1), (2, 2)])
 end
 
-@testset "Mapping: Indexing" begin
-field = DO.Field(Tuple{Int,Int}, Int)
-DO.add_label(field, (1, 2), 5)
-DO.add_label(field, (1, 3), 6)
-DO.add_label(field, (1, 2), 6)
-
-@test Set(DO.get_labels(field, (1, 2))) == Set([5, 6])
-@test Set(DO.get_labels(field, (1, 3))) == Set([6])
-@test Set(DO.get_labels(field, (1, 1))) == Set(Int[])
-@test Set(DO.get_labels(field, (1, 1, 3))) == Set(Int[])
-end
-
 sleep(0.1) # used for good printing
 println("End test")
 
