@@ -31,35 +31,18 @@ sys = DO.DiscSystem(F_sys, DF_sys, bound_DDF)
 graph, idxn = DO.symbolic_model(domain, sys)
 @test DO.get_nedges(graph) == 23468
 
-viablelist = Int[]
+statelist = collect(1:2:DO.get_nstates(graph))
+A_field = DO.matrix_field(domain, sys, idxn, statelist)
+run = 0
+
 for pos in DO.enum_pos(domain)
-    push!(viablelist, DO.get_index_by_elem(idxn, pos))
-end
-
-statelist = Int[]
-DO.viable_states!(statelist, graph, viablelist)
-@test length(statelist) == 292
-
-pos = (1, 2)
-x = DO.get_coord_by_pos(grid, pos)
-
-dom1 = DO.Domain(grid)
-for state in statelist
-    DO.add_pos!(dom1, DO.get_elem_by_index(idxn, state))
-end
-
-@static if get(ENV, "CI", "false") == "false"
-    include("../src/plotting.jl")
-    using PyPlot
-    fig = PyPlot.figure()
-    ax = fig.gca()
-    ax.set_xlim((-8.0, 8.0))
-    ax.set_ylim((-9.5, 9.5))
-    Plot.domain!(ax, 1:2, domain, fa = 0.1)
-    Plot.domain!(ax, 1:2, dom1)
-    Plot.trajectory!(ax, 1:2, sys, x, 50)
-    Plot.cell_image!(ax, 1:2, dom1, sys)
-    Plot.cell_approx!(ax, 1:2, dom1, sys)
+    run += 1
+    run > 100 && break
+    state = DO.get_index_by_elem(idxn, pos)
+    @test iseven(state) ⊻ haskey(A_field, state)
+    iseven(state) && continue
+    x = DO.get_coord_by_pos(domain.grid, pos)
+    @test A_field[state] == U*SMatrix{2,2}(1/(1 + x[1]^2), 0, 0, 1/(1 + x[2]^2))
 end
 end
 
