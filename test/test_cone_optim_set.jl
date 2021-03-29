@@ -85,15 +85,15 @@ rate_tuple_iter = DO.hyper_range((γ_min,), (γ_max,), nr)
 
 optim_solver = optimizer_with_attributes(SDPA.Optimizer)
 ~, ee_opt, rates_opt = DO.cone_optim_set(graph, ASri_field, rate_tuple_iter, optim_solver)
-@test ee_opt > 0.199335
-@test all(rates_opt .≈ (0.8069452413499163,))
+@test ee_opt > 0.000198013*(1-eps(Float64))
+@test all(rates_opt .≈ (0.8272967578345953,))
 
 @static if get(ENV, "CI", "false") == "false"
     using MosekTools
     optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
     ~, ee_opt, rates_opt = DO.cone_optim_set(graph, ASri_field, rate_tuple_iter, optim_solver)
-    @test ee_opt > 0.199335
-    @test all(rates_opt .≈ (0.8069452413499163,))
+    @test ee_opt > 0.000198013*(1-eps(Float64))
+    @test all(rates_opt .≈ (0.8272967578345953,))
 end
 end
 

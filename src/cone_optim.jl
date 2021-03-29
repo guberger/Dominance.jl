@@ -115,8 +115,8 @@ function cone_optim_set(graph, ASri_field, rate_tuple_iter, optim_solver)
                 end
                 E2 = SMatrix{A_size...}(E_list[q2])
                 for Avert in AHull
-                    @constraint(model, Symmetric(r2*P1 - Ac'*P2*Ac + Avert'*P2*Ac
-                        + Ac'*P2*Avert + Avert'*E2*Avert - ee.*_EYE_) in PSDCone())
+                    @constraint(model, Symmetric(r2*P1 - Ac'*P2*Ac - Avert'*P2*Ac
+                        - Ac'*P2*Avert - Avert'*E2*Avert - ee.*_EYE_) in PSDCone())
                 end
             end
         end
