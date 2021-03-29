@@ -6,7 +6,7 @@ using Test
 using LinearAlgebra
 using StaticArrays
 using JuMP
-using MosekTools
+using SDPA
 using Main.Dominance
 DO = Main.Dominance
 
@@ -34,12 +34,18 @@ Ari_field = Dict([DO.Edge(1, 1) => [(A1, 1)],
     DO.Edge(2, 2) => [(A2, 1)]])
 rate_tuple_iter = Iterators.product((γ1,), (sqrt(γ2),))
 
-optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
-
+optim_solver = optimizer_with_attributes(SDPA.Optimizer)
 ~, ee_opt, rates_opt = DO.cone_optim_single(graph, Ari_field, rate_tuple_iter, optim_solver)
-
 @test ee_opt > 0.022594
 @test rates_opt == (γ1, sqrt(γ2))
+
+@static if get(ENV, "CI", "false") == "false"
+    using MosekTools
+    optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
+    ~, ee_opt, rates_opt = DO.cone_optim_single(graph, Ari_field, rate_tuple_iter, optim_solver)
+    @test ee_opt > 0.022594
+    @test rates_opt == (γ1, sqrt(γ2))
+end
 end
 
 sleep(0.1) # used for good printing
