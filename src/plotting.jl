@@ -75,7 +75,7 @@ function trajectory!(ax, vars, sys, x0, nstep;
     X2list[1] = x0[vars[2]]
     x = x0
 
-    for i in 1:nstep
+    for i = 1:nstep
         x = sys.sys_map(x)
         X1list[i + 1] = x[vars[1]]
         X2list[i + 1] = x[vars[2]]

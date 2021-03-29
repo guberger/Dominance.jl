@@ -1,19 +1,19 @@
 ## Matrix set
 
-struct MatrixSet{T,MT<:AbstractArray{T,2}}
+struct MatrixSet{T,MT<:AbstractMatrix{T}}
     center::MT
     hull::Vector{MT}
     radius::T
 end
 
-function MatrixSet(Ac::AbstractArray{T,2}) where T
+function MatrixSet(Ac::AbstractMatrix{T}) where T
     return MatrixSet(Ac, [zero(Ac)], zero(T))
 end
 
-function MatrixSet(Ac::MT, A_hull::Vector{MT}) where {T,MT<:AbstractArray{T,2}}
+function MatrixSet(Ac::MT, A_hull::Vector{MT}) where {T,MT<:AbstractMatrix{T}}
     return MatrixSet(Ac, A_hull, zero(T))
 end
 
-function MatrixSet(Ac::MT, rad::T) where {T,MT<:AbstractArray{T,2}}
+function MatrixSet(Ac::MT, rad::T) where {T,MT<:AbstractMatrix{T}}
     return MatrixSet(Ac, [zero(Ac)], rad)
 end

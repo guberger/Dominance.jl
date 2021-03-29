@@ -28,6 +28,7 @@ DO.add_edge!(graph, 1, 1)
 DO.add_edge!(graph, 1, 2)
 DO.add_edge!(graph, 2, 1)
 DO.add_edge!(graph, 2, 2)
+
 Ari_field = Dict([DO.Edge(1, 1) => [(A1, 1)],
     DO.Edge(1, 2) => [(A2, 2)],
     DO.Edge(2, 1) => [(A1, 2)],
