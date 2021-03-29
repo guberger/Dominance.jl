@@ -37,5 +37,5 @@ function viable_states!(statelist, graph, viablelist)
         end
     end
 
-    println("viable_states! terminated with success: $(nstates) viable states added")
+    println("viable_states! terminated: $(nstates) viable states added")
 end

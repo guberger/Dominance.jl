@@ -35,6 +35,6 @@ function symbolic_model(domain::Domain{N,T}, sys) where {N,T}
         end
     end
 
-    println("symbolic_model! terminated with success: $(nedges) edges created")
+    println("symbolic_model! terminated: $(nedges) edges created")
     return graph, idxn
 end

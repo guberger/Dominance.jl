@@ -23,3 +23,9 @@ end
 function get_index_by_elem(idxn, elem)
     return idxn.elem2ind[elem]
 end
+
+function compose(idxn_first, idxn_second)
+    return Indexing(get_elem_by_index(idxn_second,
+            get_elem_by_index(idxn_first, index)
+        ) for index in 1:length(idxn_first.ind2elem))
+end

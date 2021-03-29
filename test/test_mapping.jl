@@ -25,6 +25,14 @@ push!(elemlist, DO.get_elem_by_index(idxn, 1))
 push!(elemlist, DO.get_elem_by_index(idxn, 2))
 sort!(elemlist)
 @test all(elemlist .== [(1, 1), (2, 2)])
+
+idxn1 = DO.Indexing(1:4:24)
+idxn2 = DO.Indexing((i, i + 1) for i = 1:2:100)
+idxn = DO.compose(idxn1, idxn2)
+for i = 1:6
+    @test DO.get_elem_by_index(idxn, i) == (8*i - 7, 8*i - 6)
+end
+@test length(idxn.ind2elem) == 6
 end
 
 sleep(0.1) # used for good printing

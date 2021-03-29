@@ -24,7 +24,7 @@ end
 
 # In add_edge:
 # Do not check that source, target are "inbounds"
-# Assumes not add twice same transition...
+# Assumes not add twice same edge...
 function add_edge!(graph, source, target)
     push!(graph.edges, Edge(source, target))
 end
@@ -39,18 +39,18 @@ function enum_edges(graph)
     return graph.edges
 end
 
-function compute_pre!(translist, graph, target)
-    for trans in enum_edges(graph)
-        if trans.target == target
-            push!(translist, trans)
+function compute_pre!(edgelist, graph, target)
+    for edge in enum_edges(graph)
+        if edge.target == target
+            push!(edgelist, edge)
         end
     end
 end
 
-function compute_post!(translist, graph, source)
-    for trans in enum_edges(graph)
-        if trans.source == source
-            push!(translist, trans)
+function compute_post!(edgelist, graph, source)
+    for edge in enum_edges(graph)
+        if edge.source == source
+            push!(edgelist, edge)
         end
     end
 end

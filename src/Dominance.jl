@@ -10,6 +10,7 @@ using Printf
 include("mapping.jl")
 include("matrices.jl")
 include("graph.jl")
+include("sub_graph.jl")
 include("system.jl")
 include("set.jl")
 include("abstraction.jl")

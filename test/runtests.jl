@@ -1,6 +1,7 @@
 include("test_set.jl")
 include("test_mapping.jl")
 include("test_graph.jl")
+include("test_sub_graph.jl")
 include("test_system.jl")
 include("test_abstraction.jl")
 include("test_symbolic_model.jl")
