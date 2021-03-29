@@ -10,9 +10,14 @@ using LazySets
 using Polyhedra
 using CDDLib
 using PyPlot
+using PyCall
 
-FC(c, a) =  matplotlib.colors.colorConverter.to_rgba(c, alpha = a)
+art3d = PyObject(PyPlot.art3D)
+ColorConv(c, a) =  matplotlib.colors.colorConverter.to_rgba(c, alpha = a)
+const _colors = repeat(matplotlib.rcParams["axes.prop_cycle"].by_key()["color"], 5)
 const _mult = (SVector(-1,-1), SVector(-1,1), SVector(1,1), SVector(1,-1))
+
+## Abstraction
 
 function verts_rect(c, h)
     return ntuple(i -> c + h.*_mult[i], 4)
@@ -27,8 +32,8 @@ function domain!(ax, vars, domain::DO.Domain{N,T};
         fc = "red", fa = 0.5, ec = "black", ea = 1.0, ew = 1.5) where {N,T}
     grid = domain.grid
     @assert length(vars) == 2 && N >= 2
-    fca = FC(fc, fa)
-    eca = FC(ec, ea)
+    fca = ColorConv(fc, fa)
+    eca = ColorConv(ec, ea)
     h = project(grid.h, vars)
 
     vertslist = NTuple{4,SVector{2,T}}[]
@@ -52,8 +57,8 @@ function set!(ax, vars, rect::DO.HyperRectangle;
     c = (rect.lb + rect.ub)/2.0
     h = (rect.ub - rect.lb)/2.0
     polylist = matplotlib.collections.PolyCollection((verts_rect(c[vars], h[vars]),))
-    fca = FC(fc, fa)
-    eca = FC(ec, ea)
+    fca = ColorConv(fc, fa)
+    eca = ColorConv(ec, ea)
     polylist.set_facecolor(fca)
     polylist.set_edgecolor(eca)
     polylist.set_linewidth(ew)
@@ -85,14 +90,14 @@ function cell_image!(ax, vars, domain::DO.Domain{N,T}, sys;
         nsub = ntuple(i -> 5, Val(N)),
         fc = "blue", fa = 0.5, ec = "darkblue", ea = 1.0, ew = 1.5) where {N,T}
     @assert length(vars) == 2 && N >= 2
-    fca = FC(fc, fa)
-    eca = FC(ec, ea)
+    fca = ColorConv(fc, fa)
+    eca = ColorConv(ec, ea)
     vertslist = Vector{SVector{2,T}}[]
     ns = nsub .- 1
 
     for pos in DO.enum_pos(domain)
         x = DO.get_coord_by_pos(domain.grid, pos)
-        subpos_axes = ((0:ns[i])./ns[i] .- 0.5 for i in 1:length(ns))
+        subpos_axes = ((0:ns[i])./ns[i] .- 0.5 for i in eachindex(ns))
         subpos_iter = Iterators.product(subpos_axes...)
         x_iter = (x + subpos.*domain.grid.h for subpos in subpos_iter)
         Fx_iter = (sys.sys_map(x) for x in x_iter)
@@ -109,8 +114,8 @@ end
 function cell_approx!(ax, vars, domain::DO.Domain{N,T}, sys;
         fc = "yellow", fa = 0.5, ec = "gold", ea = 1.0, ew = 0.5) where {N,T}
     @assert length(vars) == 2 && N >= 2
-    fca = FC(fc, fa)
-    eca = FC(ec, ea)
+    fca = ColorConv(fc, fa)
+    eca = ColorConv(ec, ea)
     vertslist = Vector{SVector{2,T}}[]
     r = domain.grid.h/2
     _H_ = SMatrix{N,N}(I).*r
@@ -134,6 +139,67 @@ function cell_approx!(ax, vars, domain::DO.Domain{N,T}, sys;
     polylist.set_edgecolor(eca)
     polylist.set_linewidth(ew)
     ax.add_collection(polylist)
+end
+
+## Cones
+
+function make_collection(verts::Vector{Vector{SVector{N,T}}};
+        fc = "blue", fa = 0.5, ec = "black", ea = 1.0, lw = 1.0) where {N,T}
+    if fc == "none"
+        fa = 0.0
+    end
+    fca = ColorConv(fc, fa)
+    eca = ColorConv(ec, ea)
+    if ec == "none"
+        eca = "none"
+        lw = 0.0
+    end
+    poly_coll = N == 2 ? matplotlib.collections.PolyCollection(verts) :
+        N == 3 ? art3d.Poly3DCollection(verts) :
+        error("dimension must be 2 or 3")
+    poly_coll.set_facecolor(fca)
+    poly_coll.set_edgecolor(eca)
+    poly_coll.set_linewidth(lw)
+    return poly_coll
+end
+
+function matrix_to_cone2d(P::SMatrix{2,2}, rad, np)
+    EV = eigen(Symmetric(P))
+    evals = EV.values
+    @assert evals[1] < 0 && evals[2] > 0
+    U = EV.vectors
+    beta = atan(sqrt(-evals[1]/evals[2]))
+    ang = range(-beta, beta, length = np)
+    arc = map(x -> rad*SVector(cos(x), sin(x)), ang)
+    arcrev = reverse(map(x -> -x, arc))
+    verts1 = vcat([SVector(0.0, 0.0)], arc, [SVector(0.0, 0.0)])
+    map!(x -> U*x, verts1, verts1)
+    verts2 = map(x -> -x, verts1)
+    return [verts1, verts2]
+end
+
+function draw_icecream3d(rad, np, ang_start, ang_stop)
+    ang = range(ang_start, ang_stop, length = np + 1)
+    arcpos = map(x -> rad*SVector(1.0, cos(x), sin(x)), ang)
+    verts_side = [[SVector(0.0, 0.0, 0.0), arcpos[i], arcpos[i+1]] for i = 1:np]
+    mirror(x) = SVector(-1, 1, 1).*x
+    append!(verts_side, map(verts -> mirror.(verts), verts_side))
+    arcneg = map(x -> rad*SVector(-1.0, cos(x), sin(x)), ang)
+    verts_top = [arcpos, arcneg]
+    return verts_side, verts_top
+end
+
+function matrix_to_cone3d(P::SMatrix{3,3}, rad, np;
+        ang_start = 0.0, ang_stop = 2*pi)
+    EV = eigen(Symmetric(P))
+    evals = EV.values
+    @assert evals[1] < 0 && evals[2] > 0 && evals[3] > 0
+    evals = abs.(evals)./(-evals[1])
+    verts_side, verts_top = draw_icecream3d(rad, np, ang_start, ang_stop)
+    U = EV.vectors./sqrt.(evals')
+    map!(x -> map(y -> U*y, x), verts_side, verts_side)
+    map!(x -> map(y -> U*y, x), verts_top, verts_top)
+    return verts_side, verts_top
 end
 
 end  # Plot

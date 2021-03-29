@@ -6,7 +6,7 @@ end
 
 function RungeKutta4(F, x, tstep, nsub::Int)
     τ = tstep/nsub
-    for i in 1:nsub
+    for i = 1:nsub
         Fx1 = F(x)
         xrk = x + Fx1*(τ/2)
         Fx2 = F(xrk)
@@ -21,7 +21,7 @@ end
 
 function RungeKutta4Linearized(F, DF, x, dx, tstep, nsub::Int)
     τ = tstep/nsub
-    for i in 1:nsub
+    for i = 1:nsub
         Fx1 = F(x)
         DFx1 = DF(x)*dx
         xrk = x + Fx1*(τ/2)

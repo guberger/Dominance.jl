@@ -1,5 +1,10 @@
 ## Solve dominance LMIs
 
+function pth_eigval(A, p, shrink)
+    e = sort(broadcast(abs, eigvals(A)), rev = true)
+    return (e[p]*(1.0-shrink), e[p+1]/(1.0-shrink))
+end
+
 # Ari_field : dict (edge -> [(matrix, rate index)])
 function cone_optim_single(graph, Ari_field, rate_tuple_iter, optim_solver)
     A_type = fieldtype(eltype(valtype(Ari_field)), 1)

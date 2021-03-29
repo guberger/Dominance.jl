@@ -16,6 +16,4 @@ include("abstraction.jl")
 include("symbolic_model.jl")
 include("viable_states.jl")
 include("cone_optim.jl")
-
-
 end  # module Dominance
