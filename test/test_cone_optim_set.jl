@@ -40,20 +40,20 @@ ASri_field = Dict([DO.Edge(1, 1) => [(DO.MatrixSet(A1), 1)],
 rate_tuple_iter = Iterators.product((γ1,), (sqrt(γ2),))
 
 optim_solver = optimizer_with_attributes(SDPA.Optimizer)
-~, ee_opt_1, rates_opt_1 = DO.cone_optim_single(graph, Ari_field, rate_tuple_iter, optim_solver)
-~, ee_opt_2, rates_opt_2 = DO.cone_optim_set(graph, ASri_field, rate_tuple_iter, optim_solver)
-@test ee_opt_1 ≈ ee_opt_2
+~, δ_opt_1, rates_opt_1 = DO.cone_optim_single(graph, Ari_field, rate_tuple_iter, optim_solver)
+~, δ_opt_2, rates_opt_2 = DO.cone_optim_set(graph, ASri_field, rate_tuple_iter, optim_solver)
+@test δ_opt_1*0.999 < δ_opt_2 < δ_opt_1*1.001
 @test all(rates_opt_1 .≈ rates_opt_2)
-@test ee_opt_2 > 0.011781
+@test δ_opt_2 > 0.0117813*0.999
 
 @static if get(ENV, "CI", "false") == "false"
     using MosekTools
     optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
-    ~, ee_opt_1, rates_opt_1 = DO.cone_optim_single(graph, Ari_field, rate_tuple_iter, optim_solver)
-    ~, ee_opt_2, rates_opt_2 = DO.cone_optim_set(graph, ASri_field, rate_tuple_iter, optim_solver)
-    @test ee_opt_1 ≈ ee_opt_2
+    ~, δ_opt_1, rates_opt_1 = DO.cone_optim_single(graph, Ari_field, rate_tuple_iter, optim_solver)
+    ~, δ_opt_2, rates_opt_2 = DO.cone_optim_set(graph, ASri_field, rate_tuple_iter, optim_solver)
+    @test δ_opt_1*0.999 < δ_opt_2 < δ_opt_1*1.001
     @test all(rates_opt_1 .≈ rates_opt_2)
-    @test ee_opt_2 > 0.011781
+    @test δ_opt_2 > 0.0117819*0.999
 end
 end
 
@@ -84,16 +84,53 @@ nr = 9
 rate_tuple_iter = DO.hyper_range((γ_min,), (γ_max,), nr)
 
 optim_solver = optimizer_with_attributes(SDPA.Optimizer)
-~, ee_opt, rates_opt = DO.cone_optim_set(graph, ASri_field, rate_tuple_iter, optim_solver)
-@test ee_opt > 0.000198013*(1-eps(Float64))
+~, δ_opt, rates_opt = DO.cone_optim_set(graph, ASri_field, rate_tuple_iter, optim_solver)
+@test δ_opt > 0.000198013*0.999
 @test all(rates_opt .≈ (0.8272967578345953,))
 
 @static if get(ENV, "CI", "false") == "false"
     using MosekTools
     optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
-    ~, ee_opt, rates_opt = DO.cone_optim_set(graph, ASri_field, rate_tuple_iter, optim_solver)
-    @test ee_opt > 0.000198013*(1-eps(Float64))
+    ~, δ_opt, rates_opt = DO.cone_optim_set(graph, ASri_field, rate_tuple_iter, optim_solver)
+    @test δ_opt > 0.000198142*0.999
     @test all(rates_opt .≈ (0.8272967578345953,))
+end
+end
+
+@testset "cone_optim_set radius" begin
+Ac_list = ((@SMatrix [0.0 2.0; 1.0 0.0]),
+    (@SMatrix [0.0 1.0; 2.0 0.0]))
+Ad = @SMatrix [0.1 0.1; 0.1 0.1]
+radius = 0.1
+
+graph = DO.Graph(2)
+DO.add_edge!(graph, 1, 2)
+DO.add_edge!(graph, 2, 1)
+ASri_field = Dict([DO.Edge(1, 2) => [(DO.MatrixSet(Ac_list[1], [Ad, -Ad], radius), 1)],
+    DO.Edge(2, 1) => [(DO.MatrixSet(Ac_list[2], [Ad, -Ad], radius), 1)]])
+γ_min = 0.0
+γ_max = Inf
+for Ac in Ac_list
+    for Avert in (-Ad, 0.0, Ad)
+        EG = DO.pth_eigval(Matrix(Ac .+ Avert), 1, 1e-9)
+        γ_max = min(γ_max, EG[1])
+        γ_min = max(γ_min, EG[2])
+    end
+end
+nr = 9
+rate_tuple_iter = DO.hyper_range((γ_min,), (γ_max,), nr)
+
+optim_solver = optimizer_with_attributes(SDPA.Optimizer)
+~, δ_opt, rates_opt = DO.cone_optim_set(graph, ASri_field, rate_tuple_iter, optim_solver)
+@test δ_opt > 0.579326*0.999
+@test all(rates_opt .≈ (1.4198684167769349,))
+
+@static if get(ENV, "CI", "false") == "false"
+    using MosekTools
+    optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
+    ~, δ_opt, rates_opt = DO.cone_optim_set(graph, ASri_field, rate_tuple_iter, optim_solver)
+    @test δ_opt > 0.579327*0.999
+    @test all(rates_opt .≈ (1.4198684167769349,))
 end
 end
 

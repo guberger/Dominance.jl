@@ -78,12 +78,12 @@ ax.add_collection(poly_list)
 ax.plot(0.0, 0.0, marker = "x", c = "k", ms = 8, mew = 3.0)
 
 optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
-P_opt, ee_opt, rates_opt = DO.cone_optim_set(graph, ASri_field, rate_tuple_iter, optim_solver)
+P_opt, δ_opt, rates_opt = DO.cone_optim_set(graph, ASri_field, rate_tuple_iter, optim_solver)
 
 for i in eachindex(P_opt)
     println(eigvals(P_opt[i]))
 end
-println(ee_opt)
+println(δ_opt)
 println(rates_opt)
 
 γ = rates_opt[1]

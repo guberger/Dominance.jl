@@ -36,15 +36,15 @@ Ari_field = Dict([DO.Edge(1, 1) => [(A1, 1)],
 rate_tuple_iter = Iterators.product((γ1,), (sqrt(γ2),))
 
 optim_solver = optimizer_with_attributes(SDPA.Optimizer)
-~, ee_opt, rates_opt = DO.cone_optim_single(graph, Ari_field, rate_tuple_iter, optim_solver)
-@test ee_opt > 0.022594
+~, δ_opt, rates_opt = DO.cone_optim_single(graph, Ari_field, rate_tuple_iter, optim_solver)
+@test δ_opt > 0.0225941*0.999
 @test rates_opt == (γ1, sqrt(γ2))
 
 @static if get(ENV, "CI", "false") == "false"
     using MosekTools
     optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
-    ~, ee_opt, rates_opt = DO.cone_optim_single(graph, Ari_field, rate_tuple_iter, optim_solver)
-    @test ee_opt > 0.022594
+    ~, δ_opt, rates_opt = DO.cone_optim_single(graph, Ari_field, rate_tuple_iter, optim_solver)
+    @test δ_opt > 0.0225946*0.999
     @test rates_opt == (γ1, sqrt(γ2))
 end
 end

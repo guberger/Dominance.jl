@@ -43,7 +43,7 @@ nr = 9
 rate_tuple_iter = DO.hyper_range((EG1[2], EG2[2]), (EG1[1], EG2[1]), nr)
 
 optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
-P_opt, ee_opt, rates_opt = DO.cone_optim_single(graph, Ari_field, rate_tuple_iter, optim_solver)
+P_opt, ~, ~ = DO.cone_optim_single(graph, Ari_field, rate_tuple_iter, optim_solver)
 
 fig = PyPlot.figure(figsize = (9.8, 9.0))
 gs = matplotlib.gridspec.GridSpec(2, 2, figure = fig, wspace = 0.1, hspace = 0.0)
