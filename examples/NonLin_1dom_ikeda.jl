@@ -27,7 +27,7 @@ matplotlib.rc("ytick", labelsize = 11)
 lb = SVector(-1.1, -1.5)
 ub = SVector(3.4, 1.8)
 x0 = SVector(0.0, 0.0)
-h = (ub - lb)./(20, 15)
+h = (ub - lb)./(20, 15)./10
 grid = DO.Grid(x0, h)
 domain = DO.Domain(grid)
 DO.add_set!(domain, DO.HyperRectangle(lb, ub), DO.OUTER)
@@ -40,7 +40,7 @@ bound_DDF_inf = 22.5
 
 sys = DO.DiscSystem(Ikeda, DIkeda, bound_DDF_inf)
 
-nrounds = 4
+nrounds = 3
 
 for i = 1:nrounds
     global domain
@@ -56,45 +56,46 @@ for i = 1:nrounds
 end
 
 symmod = DO.trim_symbolic_model(symmod, viablelist)
+graph = symmod.graph
 
-
-#=
 println("compute bound_DDF_2")
-f_opt, ~ = DO.minimize_over_domain(DDF_norm_2, domain, nsub)
+f_opt, ~ = DO.minimize_over_domain(DDF_norm_2, domain, (3, 3))
 println(-f_opt)
 bound_DDF_2 = -f_opt
 # bound_DDF_2 = opnorm(U)*3*sqrt(3)/8
-radius = bound_DDF_2*norm(h, Inf)/2
+radius = bound_DDF_2*norm(symmod.grid.h, Inf)/2
 println(radius)
-A_field = DO.matrix_field(domain, sys, idxn, 1:nstates)
+A_field = DO.sensitivity_matrices(domain, sys)
 ASri_tmp = Any[]
-for edge in DO.enum_edges(subgraph)
+for edge in DO.enum_edges(graph)
     source = edge.source
     target = edge.target
-    push!(ASri_tmp, edge => [(DO.MatrixSet(A_field[source], radius), 1)])
+    pos = DO.get_pos_by_state(symmod, source)
+    push!(ASri_tmp, edge => [(DO.MatrixSet(A_field[pos], radius), 1)])
     # push!(ASri_tmp, edge => [(A_field[source], 1)])
 end
 ASri_lab = Dict(ASri_tmp)
-nr = 3
-rate_tuple_iter = DO.hyper_range((0.5,), (0.7,), nr)
-rate_tuple_iter = DO.hyper_range((0.6,), (0.6,), 1)
+rate_tuple_iter = DO.hyper_range((1.0,), (1.0,), 1)
 
-println("start optim")
-optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
-P_opt, δ_opt, rates_opt = DO.cone_optim(subgraph, ASri_lab, rate_tuple_iter, optim_solver)
+println("$(DO.get_nedges(graph)) edges")
 
-for i in eachindex(P_opt)
-    ev = eigvals(P_opt[i])
-    if ev[1] >= 0 || ev[2] <= 0
-        print(eigvals(P_opt[i]), ", ")
-    end
-end
-println(δ_opt)
-println(rates_opt)
-=#
+# println("start optim")
+# optim_solver = optimizer_with_attributes(Mosek.Optimizer)
+# P_opt, δ_opt, rates_opt = DO.cone_optim(graph, ASri_lab, rate_tuple_iter, optim_solver)
+#
+# for i in eachindex(P_opt)
+#     ev = eigvals(P_opt[i])
+#     if ev[1] >= 0 || ev[2] <= 0
+#         print(eigvals(P_opt[i]), ", ")
+#     end
+# end
+# println(δ_opt)
+# println(rates_opt)
+# P_field = Dict([DO.get_pos_by_state(symmod, i) => P_opt[i] for i in eachindex(P_opt)])
 
 pos = DO.get_pos_by_state(symmod, 1)
-x = DO.get_coord_by_pos(grid, pos)
+x = DO.get_coord_by_pos(symmod.grid, pos)
+domain1 = DO.support_domain(symmod, 1)
 
 nsteps = 5
 np = 50
@@ -105,7 +106,9 @@ ax = fig.gca()
 ax.set_xlim((-1.1, 3.4).*1.1)
 ax.set_ylim((-1.5, 1.8).*1.1)
 Plot.domain!(ax, 1:2, domain, ew = 0.1)
+Plot.cell_image!(ax, 1:2, domain1, sys)
+Plot.cell_approx!(ax, 1:2, domain1, sys)
 Plot.trajectory!(ax, 1:2, sys, x, nsteps)
-# Plot.cones!(ax, grid, sys, x, idxn, P_opt, nsteps, rad, np)
+Plot.cones!(ax, symmod.grid, sys, x, P_field, nsteps, rad, np)
 
 end  # module ExampleMain

@@ -72,7 +72,7 @@ rate_tuple_iter = DO.hyper_range((0.5,), (0.7,), nr)
 rate_tuple_iter = DO.hyper_range((0.6,), (0.6,), 1)
 
 println("start optim")
-optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
+optim_solver = optimizer_with_attributes(Mosek.Optimizer)
 P_opt, δ_opt, rates_opt = DO.cone_optim(graph, ASri_lab, rate_tuple_iter, optim_solver)
 
 for i in eachindex(P_opt)

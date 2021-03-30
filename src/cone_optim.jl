@@ -97,6 +97,7 @@ function cone_optim(graph, ASri_lab, rate_tuple_iter, optim_solver)
         δ = ε - μ
         @objective(model, Max, δ)
 
+        println("Optimize:")
         optimize!(model)
 
         if value(δ) > δ_opt
