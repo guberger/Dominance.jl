@@ -32,18 +32,18 @@ EG1 = DO.pth_eigval(Matrix(A_list[1]), 1, 1e-9)
 EG2 = DO.pth_eigval(Matrix(A_list[1]*A_list[2]*A_list[3]), 1, 1e-9)
 
 graph = DO.Graph(3)
-Ari_tmp = Any[]
+ASri_tmp = Any[]
 for i = 1:3, j = 1:3
     DO.add_edge!(graph, i, j)
     ri = i == j ? 1 : 2
-    push!(Ari_tmp, DO.Edge(i, j) => [(A_list[j], ri)])
+    push!(ASri_tmp, DO.Edge(i, j) => [(DO.MatrixSet(A_list[j]), ri)])
 end
-Ari_field = Dict(Ari_tmp)
+ASri_field = Dict(ASri_tmp)
 nr = 9
 rate_tuple_iter = DO.hyper_range((EG1[2], EG2[2]), (EG1[1], EG2[1]), nr)
 
 optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
-P_opt, ~, ~ = DO.cone_optim_single(graph, Ari_field, rate_tuple_iter, optim_solver)
+P_opt, ~, ~ = DO.cone_optim(graph, ASri_field, rate_tuple_iter, optim_solver)
 
 fig = PyPlot.figure(figsize = (9.8, 9.0))
 gs = matplotlib.gridspec.GridSpec(2, 2, figure = fig, wspace = 0.1, hspace = 0.0)

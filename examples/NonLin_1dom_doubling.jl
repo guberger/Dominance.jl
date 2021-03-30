@@ -54,12 +54,14 @@ nstates = DO.get_nstates(subgraph)
 idxn = DO.compose(idxn2, idxn1)
 A_field = DO.matrix_field(domain, sys, idxn, 1:nstates)
 
-radius = 0.1
+# Warning: Ad and radius set arbitrarily for performance and validity checks !!!
+Ad = (@SMatrix [0.1 0.1; 0.1 0.1])*0.1
+radius = 0.05
 ASri_tmp = Any[]
 for edge in DO.enum_edges(subgraph)
     source = edge.source
     target = edge.target
-    push!(ASri_tmp, edge => [(DO.MatrixSet(A_field[source], radius), 1)])
+    push!(ASri_tmp, edge => [(DO.MatrixSet(A_field[source], [Ad, -Ad], radius), 1)])
     # push!(ASri_tmp, edge => [(A_field[source], 1)])
 end
 ASri_field = Dict(ASri_tmp)
@@ -68,13 +70,13 @@ rate_tuple_iter = DO.hyper_range((0.5,), (0.7,), nr)
 
 println("start optim")
 optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
-P_opt, δ_opt, rates_opt = DO.cone_optim_set(
-    subgraph, ASri_field, rate_tuple_iter, optim_solver)
+P_opt, δ_opt, rates_opt = DO.cone_optim(subgraph, ASri_field, rate_tuple_iter, optim_solver)
 
 for i in eachindex(P_opt)
-    println(eigvals(P_opt[i]))
+    print(eigvals(P_opt[i]), ", ")
 end
 println(δ_opt)
 println(rates_opt)
+end
 
 end  # module ExampleMain
