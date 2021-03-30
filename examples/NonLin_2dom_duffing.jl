@@ -132,15 +132,15 @@ println(cos(xx2[1]))
 
 np = 50
 rad = 3.0
-verts_side, ~ = Plot.matrix_to_cone3d(-P_opt[2], rad, np)
-f_shift(x) = x + xx1
-map!(verts -> f_shift.(verts), verts_side, verts_side)
-poly_list = Plot.make_collection(verts_side, fc = "green", fa = 0.3, ec = "none")
+verts, ~ = Plot.matrix_to_cone3d(-P_opt[2], rad, np)
+f_shift1(vert) = vert + xx1
+map!(verts -> f_shift1.(verts), verts, verts)
+poly_list = Plot.make_collection(verts, fc = "green", fa = 0.3, ec = "none")
 ax.add_collection3d(poly_list)
-verts_side, ~ = Plot.matrix_to_cone3d(-P_opt[2], rad, np)
-f_shift(x) = x + xx2
-map!(verts -> f_shift.(verts), verts_side, verts_side)
-poly_list = Plot.make_collection(verts_side, fc = "green", fa = 0.3, ec = "none")
+verts, ~ = Plot.matrix_to_cone3d(-P_opt[2], rad, np)
+f_shift2(vert) = vert + xx2
+map!(verts -> f_shift2.(verts), verts, verts)
+poly_list = Plot.make_collection(verts, fc = "green", fa = 0.3, ec = "none")
 ax.add_collection3d(poly_list)
 
 ## Cone plot
@@ -161,8 +161,8 @@ LAB = [L"$P_{\mathtt{a}}$", L"$P_{\mathtt{b}}$", L"$P_{\mathtt{c}}$", L"$P_{\mat
 for i = 1:4
     ax = AX_[i]
     ax.patch.set_facecolor("none")
-    verts_side, ~ = Plot.matrix_to_cone3d(-P_opt[i], rad, np)
-    poly_list = Plot.make_collection(verts_side, fc = Plot._colors[i], fa = 0.3, ec = "none")
+    verts, ~ = Plot.matrix_to_cone3d(-P_opt[i], rad, np)
+    poly_list = Plot.make_collection(verts, fc = Plot._colors[i], fa = 0.3, ec = "none")
     ax.add_collection3d(poly_list)
     circ[i] = matplotlib.patches.Patch(fc = Plot._colors[i], ec = "none", alpha = 0.3)
     ax.quiver3D(0.0, 0.0, 0.0, 1.0, 0.0, 0.0, arrow_length_ratio = 0.3, length = 0.5)

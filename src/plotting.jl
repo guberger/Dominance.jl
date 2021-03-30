@@ -178,12 +178,13 @@ function matrix_to_cone2d(P::SMatrix{2,2}, rad, np)
     return [verts1, verts2]
 end
 
+_mirror(vert) = SVector(-1, 1, 1).*vert
+
 function draw_icecream3d(rad, np, ang_start, ang_stop)
     ang = range(ang_start, ang_stop, length = np + 1)
     arcpos = map(x -> rad*SVector(1.0, cos(x), sin(x)), ang)
     verts_side = [[SVector(0.0, 0.0, 0.0), arcpos[i], arcpos[i+1]] for i = 1:np]
-    mirror(x) = SVector(-1, 1, 1).*x
-    append!(verts_side, map(verts -> mirror.(verts), verts_side))
+    append!(verts_side, map(verts -> _mirror.(verts), verts_side))
     arcneg = map(x -> rad*SVector(-1.0, cos(x), sin(x)), ang)
     verts_top = [arcpos, arcneg]
     return verts_side, verts_top
@@ -200,6 +201,37 @@ function matrix_to_cone3d(P::SMatrix{3,3}, rad, np;
     map!(x -> map(y -> U*y, x), verts_side, verts_side)
     map!(x -> map(y -> U*y, x), verts_top, verts_top)
     return verts_side, verts_top
+end
+
+function cones!(ax, grid::DO.Grid{2}, sys, x0, idxn, P_field, nsteps, rad, np;
+        fc1 = "blue", fa1 = 0.5, ec1 = "blue", ea1 = 1.0, lw1 = 0.5,
+        fc2 = "green", fa2 = 0.5, ec2 = "green", ea2 = 1.0, lw2 = 0.5,
+        fact = 1.1)
+    @assert length(x0) == 2
+    x = x0
+    _H_ = SMatrix{2,2}(I)
+    for i = 0:nsteps
+        Fx, DFx = sys.linsys_map(x, _H_)
+        DFx = DFx/opnorm(DFx)
+        pos = DO.get_pos_by_coord(grid, x)
+        index = DO.get_index_by_elem(idxn, pos)
+        P = P_field[index]
+        verts = Plot.matrix_to_cone2d(P, rad, np)
+        f_shift1(vert) = vert + x
+        map!(verts -> f_shift1.(verts), verts, verts)
+        poly_list = Plot.make_collection(verts,
+            fc = fc1, fa = fa1, ec = ec1, ea = ea1, lw = lw1)
+        ax.add_collection(poly_list)
+        i == nsteps && break
+        FP = DFx'\P/DFx
+        verts = Plot.matrix_to_cone2d(FP, rad*fact, np)
+        f_shift2(vert) = vert + Fx
+        map!(verts -> f_shift2.(verts), verts, verts)
+        poly_list = Plot.make_collection(verts,
+            fc = fc2, fa = fa2, ec = ec2, ea = ea2, lw = lw2)
+        ax.add_collection(poly_list)
+        x = Fx
+    end
 end
 
 end  # Plot

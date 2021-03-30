@@ -71,11 +71,11 @@ DO.add_set!(domain, DO.HyperRectangle(lb, ub), DO.OUTER)
 U = 2*SMatrix{2,2}(cos(θ), -sin(θ), sin(θ), cos(θ))
 F_sys(x) = U*SVector(atan(x[1]), atan(x[2]))
 DF_sys(x) = U*SMatrix{2,2}(1/(1 + x[1]^2), 0, 0, 1/(1 + x[2]^2))
-bound_DDF = norm(U, Inf)*3*sqrt(3)/8
+bound_DDF = opnorm(U, Inf)*3*sqrt(3)/8
 
 sys = DO.DiscSystem(F_sys, DF_sys, bound_DDF)
 graph, idxn = DO.symbolic_model(domain, sys)
-@test DO.get_nedges(graph) == 717
+@test DO.get_nedges(graph) == 1065
 
 pos = (1, 2)
 x = DO.get_coord_by_pos(grid, pos)

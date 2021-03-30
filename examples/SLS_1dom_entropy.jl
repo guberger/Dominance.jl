@@ -57,8 +57,8 @@ LAB = (L"$P_{\mathtt{a}}$", L"$P_{\mathtt{b}}$", L"$P_{\mathtt{c}}$")
 
 for i = 1:3
     ax = AX_[i]
-    verts_side, verts_top = Plot.matrix_to_cone3d(M*P_opt[i]*M, rad, np)
-    poly_list = Plot.make_collection(verts_side, fc = Plot._colors[i], fa = 0.3, ec = "none")
+    verts, ~ = Plot.matrix_to_cone3d(M*P_opt[i]*M, rad, np)
+    poly_list = Plot.make_collection(verts, fc = Plot._colors[i], fa = 0.3, ec = "none")
     ax.add_collection3d(poly_list)
     circ[i] = matplotlib.patches.Patch(fc = Plot._colors[i], ec = "none", alpha = 0.3)
     ax.quiver3D(0.0, 0.0, 0.0, 1.0, 0.0, 0.0, arrow_length_ratio = 0.3, length = 0.5)
