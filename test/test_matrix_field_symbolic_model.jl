@@ -32,7 +32,7 @@ graph, idxn = DO.symbolic_model(domain, sys)
 @test DO.get_nedges(graph) == 25214
 
 statelist = collect(1:2:DO.get_nstates(graph))
-A_field = DO.matrix_field(domain, sys, idxn, statelist)
+A_field = DO.matrix_field(grid, sys, idxn, statelist)
 run = 0
 
 for pos in DO.enum_pos(domain)

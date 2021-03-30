@@ -1,6 +1,6 @@
 # Refine discretizetaion
 
-function refine_domain(domain::Domain{N}, nsub::NTuple{N,Int}) where N
+function refine_domain(domain, nsub)
     println("refine_domain started")
     orig = domain.grid.orig
     h = domain.grid.h

@@ -1,4 +1,5 @@
 # All plotting functions
+
 module Plot
 
 import ..Dominance
