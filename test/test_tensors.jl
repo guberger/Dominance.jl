@@ -11,7 +11,7 @@ DO = Main.Dominance
 sleep(0.1) # used for good printing
 println("Started test")
 
-@testset "tensors: norm" begin
+@testset "Tensor norm" begin
 θ = π/5.0
 U = 2*SMatrix{2,2}(cos(θ), -sin(θ), sin(θ), cos(θ))
 F_sys(x) = U*SVector(atan(x[1]), atan(x[2]))

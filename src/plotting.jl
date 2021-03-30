@@ -204,7 +204,8 @@ function matrix_to_cone3d(P::SMatrix{3,3}, rad, np;
     return verts_side, verts_top
 end
 
-function cones!(ax, grid::DO.Grid{2}, sys, x0, idxn, P_field, nsteps, rad, np;
+function cones!(ax, grid::DO.Grid{2}, sys, x0, P_field,
+        nsteps, rad, np;
         fc1 = "blue", fa1 = 0.5, ec1 = "blue", ea1 = 1.0, lw1 = 0.5,
         fc2 = "green", fa2 = 0.5, ec2 = "green", ea2 = 1.0, lw2 = 0.5,
         fact = 1.1)
@@ -215,8 +216,7 @@ function cones!(ax, grid::DO.Grid{2}, sys, x0, idxn, P_field, nsteps, rad, np;
         Fx, DFx = sys.linsys_map(x, _H_)
         DFx = DFx/opnorm(DFx)
         pos = DO.get_pos_by_coord(grid, x)
-        index = DO.get_index_by_elem(idxn, pos)
-        P = P_field[index]
+        P = P_field[pos]
         verts = Plot.matrix_to_cone2d(P, rad, np)
         f_shift1(vert) = vert + x
         map!(verts -> f_shift1.(verts), verts, verts)

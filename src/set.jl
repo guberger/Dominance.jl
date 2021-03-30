@@ -1,4 +1,4 @@
-## Polyhedron
+## Hyper rectangle
 
 struct HyperRectangle{VT}
     lb::VT
@@ -22,6 +22,8 @@ function Base.issubset(a::HyperRectangle, b::HyperRectangle)
     return all(a.lb .>= b.lb) && all(a.ub .<= b.ub)
 end
 
+## Polyhedron
+
 # Polyhedron defined by {x : |[Ax]_i| ≦ b_i ∀ i}
 struct CenteredPolyhedron{MT,VT}
     A::MT
@@ -32,6 +34,8 @@ function Base.in(x, H::CenteredPolyhedron)
     return all(abs.(H.A*x) .<= H.b)
 end
 # all(x .<= y) is (surprisingly) faster than all(i -> x[i] <= y[i], eachindex(x))
+
+## Hyper range
 
 function hyper_range(lb::NTuple{N,T}, ub::NTuple{N,T}) where {N,T}
     ranges = ntuple(i -> UnitRange(lb[i], ub[i]), Val(N))

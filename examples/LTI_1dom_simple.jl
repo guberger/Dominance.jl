@@ -50,11 +50,11 @@ ax.plot((α, α), (-0.05, -0.28), c = "black")
 
 graph = DO.Graph(1)
 DO.add_edge!(graph, 1, 1)
-ASri_field = Dict([DO.Edge(1, 1) => [(DO.MatrixSet(A), 1)]])
+ASri_lab = Dict([DO.Edge(1, 1) => [(DO.MatrixSet(A), 1)]])
 rate_tuple_iter = Iterators.product((γ,))
 
 optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
-P_opt, ~, ~ = DO.cone_optim(graph, ASri_field, rate_tuple_iter, optim_solver)
+P_opt, ~, ~ = DO.cone_optim(graph, ASri_lab, rate_tuple_iter, optim_solver)
 
 np = 50
 rad = 1.0

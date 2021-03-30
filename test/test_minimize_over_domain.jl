@@ -11,7 +11,7 @@ DO = Main.Dominance
 sleep(0.1) # used for good printing
 println("Started test")
 
-@testset "minimum_domain" begin
+@testset "Minimize over domain" begin
 lb = SVector(-7.0, -7.0)
 ub = SVector(7.0, 7.0)
 x0 = SVector(0.01, 0.01)
@@ -22,7 +22,7 @@ DO.add_set!(domain, DO.HyperRectangle(lb, ub), DO.OUTER)
 
 f(x) = -1/((x[1] - 1)^2 + (x[2] - 2)^2 + 1)
 nsub = (3, 3)
-f_opt, x_opt = DO.minimum_domain(f, domain, nsub)
+f_opt, x_opt = DO.minimize_over_domain(f, domain, nsub)
 @test f_opt < -0.99
 @test norm(x_opt - SVector(1.0, 2.0), Inf) <= norm(h, Inf)/minimum(nsub)
 
@@ -35,12 +35,12 @@ DDF_sys(x) = SArray{Tuple{2,2,2}}(-3.23606797749979*x[1]/(x[1]^2 + 1)^2,
     -2.35114100916989*x[2]/(x[2]^2 + 1)^2,
     -3.23606797749979*x[2]/(x[2]^2 + 1)^2, )
 f(x) = -DO.tensor3d_normInf2matp(DDF_sys(x), Inf)
-f_opt, x_opt = DO.minimum_domain(f, domain, nsub)
+f_opt, x_opt = DO.minimize_over_domain(f, domain, nsub)
 bound_DDF = opnorm(U, Inf)*3*sqrt(3)/8
 display(f_opt)
 @test f_opt < -bound_DDF*0.99
 f(x) = -DO.tensor3d_normInf2matp(DDF_sys(x), 2)
-f_opt, x_opt = DO.minimum_domain(f, domain, nsub)
+f_opt, x_opt = DO.minimize_over_domain(f, domain, nsub)
 bound_DDF = opnorm(U, 2)*3*sqrt(3)/8
 @test f_opt < -bound_DDF*0.99
 end

@@ -33,42 +33,34 @@ domain = DO.Domain(grid)
 DO.add_set!(domain, DO.HyperRectangle(lb, ub), DO.OUTER)
 DDF_norm_inf(x) = -DO.tensor3d_normInf2matp(DDIkeda(x), Inf)
 DDF_norm_2(x) = -DO.tensor3d_normInf2matp(DDIkeda(x), 2)
-f_opt, ~ = DO.minimum_domain(DDF_norm_inf, domain, (10, 10))
+f_opt, ~ = DO.minimize_over_domain(DDF_norm_inf, domain, (10, 10))
 println(-f_opt)
-bound_DDF_inf = -f_opt
+# bound_DDF_inf = -f_opt
 bound_DDF_inf = 22.5
 
 sys = DO.DiscSystem(Ikeda, DIkeda, bound_DDF_inf)
 
 nrounds = 4
-statelist = Int[]
 
 for i = 1:nrounds
     global domain
     global grid
-    graph, idxn1 = DO.symbolic_model(domain, sys)
-    global graph
-    global idxn1
-    viablelist = 1:DO.get_ncells(domain)
-    empty!(statelist)
-    DO.viable_states!(statelist, graph, viablelist)
-    domain = DO.Domain(grid)
-    for state in statelist
-        DO.add_pos!(domain, DO.get_elem_by_index(idxn1, state))
-    end
+    symmod = DO.symbolic_model_from_system(domain, sys)
+    global symmod
+    statelist = 1:DO.get_ncells(domain)
+    viablelist = DO.viable_states(symmod.graph, statelist)
+    global viablelist
+    domain = DO.support_domain(symmod, viablelist)
     i == nrounds && break
     domain = DO.refine_domain(domain, (2, 2))
-    grid = domain.grid
 end
 
-subgraph, idxn2 = DO.sub_graph(graph, statelist)
-nstates = DO.get_nstates(subgraph)
-idxn = DO.compose(idxn2, idxn1)
+symmod = DO.trim_symbolic_model(symmod, viablelist)
 
 
 #=
 println("compute bound_DDF_2")
-f_opt, ~ = DO.minimum_domain(DDF_norm_2, domain, nsub)
+f_opt, ~ = DO.minimize_over_domain(DDF_norm_2, domain, nsub)
 println(-f_opt)
 bound_DDF_2 = -f_opt
 # bound_DDF_2 = opnorm(U)*3*sqrt(3)/8
@@ -82,14 +74,14 @@ for edge in DO.enum_edges(subgraph)
     push!(ASri_tmp, edge => [(DO.MatrixSet(A_field[source], radius), 1)])
     # push!(ASri_tmp, edge => [(A_field[source], 1)])
 end
-ASri_field = Dict(ASri_tmp)
+ASri_lab = Dict(ASri_tmp)
 nr = 3
 rate_tuple_iter = DO.hyper_range((0.5,), (0.7,), nr)
 rate_tuple_iter = DO.hyper_range((0.6,), (0.6,), 1)
 
 println("start optim")
 optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
-P_opt, δ_opt, rates_opt = DO.cone_optim(subgraph, ASri_field, rate_tuple_iter, optim_solver)
+P_opt, δ_opt, rates_opt = DO.cone_optim(subgraph, ASri_lab, rate_tuple_iter, optim_solver)
 
 for i in eachindex(P_opt)
     ev = eigvals(P_opt[i])
@@ -101,7 +93,7 @@ println(δ_opt)
 println(rates_opt)
 =#
 
-pos = DO.get_elem_by_index(idxn1, first(statelist))
+pos = DO.get_pos_by_state(symmod, 1)
 x = DO.get_coord_by_pos(grid, pos)
 
 nsteps = 5

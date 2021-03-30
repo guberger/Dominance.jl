@@ -49,7 +49,7 @@ for i = 1:nregions, j = 1:nregions
     DO.add_edge!(graph, i, j)
     push!(ASri_tmp, DO.Edge(i, j) => [(DO.MatrixSet(Ac_list[i], [Ad, -Ad]), 1)])
 end
-ASri_field = Dict(ASri_tmp)
+ASri_lab = Dict(ASri_tmp)
 
 fig = PyPlot.figure(figsize = (9.1, 8.3))
 ax = fig.add_axes((0.6, 0.55, 0.35, 0.35), aspect = "equal")
@@ -78,7 +78,7 @@ ax.add_collection(poly_list)
 ax.plot(0.0, 0.0, marker = "x", c = "k", ms = 8, mew = 3.0)
 
 optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
-P_opt, δ_opt, rates_opt = DO.cone_optim(graph, ASri_field, rate_tuple_iter, optim_solver)
+P_opt, δ_opt, rates_opt = DO.cone_optim(graph, ASri_lab, rate_tuple_iter, optim_solver)
 
 for i in eachindex(P_opt)
     println(eigvals(P_opt[i]))

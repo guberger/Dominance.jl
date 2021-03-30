@@ -10,7 +10,7 @@ DO = Main.Dominance
 sleep(0.1) # used for good printing
 println("Started test")
 
-@testset "Set: hyper_range" begin
+@testset "Hyper range" begin
 iter = DO.hyper_range((1,2,3), (1,3,6))
 @test length(iter) == 8
 @test (1,2,6) ∈ iter

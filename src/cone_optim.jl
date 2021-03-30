@@ -9,9 +9,10 @@ end
 
 _matrix_type(::Type{MatrixSet{T,MT}}) where {T,MT} = MT
 
-# ASri_field : dict (edge -> [(matrix set, rate index)])
-function cone_optim(graph, ASri_field, rate_tuple_iter, optim_solver)
-    ASri_type = eltype(valtype(ASri_field))
+# ASri_lab : dict (edge -> [(matrix set, rate index)])
+# lab for labelling
+function cone_optim(graph, ASri_lab, rate_tuple_iter, optim_solver)
+    ASri_type = eltype(valtype(ASri_lab))
     AS_type = fieldtype(ASri_type, 1)
     A_type = _matrix_type(AS_type)
     A_size = size(A_type)
@@ -40,7 +41,7 @@ function cone_optim(graph, ASri_field, rate_tuple_iter, optim_solver)
             q2 = edge.target
             P1 = P_list[q1]
             P2 = P_list[q2]
-            ASri_list = get(ASri_field, edge, ASri_type[])
+            ASri_list = get(ASri_lab, edge, ASri_type[])
             for ASri in ASri_list
                 AS = ASri[1]
                 r2 = rate_tuple[ASri[2]]^2

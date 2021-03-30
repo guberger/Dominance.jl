@@ -11,7 +11,7 @@ DO = Main.Dominance
 sleep(0.1) # used for good printing
 println("Started test")
 
-@testset "symbolic_model + viabel_states" begin
+@testset "Invariant set: symbolic_model_from_system + viabel_states" begin
 lb = SVector(-7.0, -7.0)
 ub = SVector(7.0, 7.0)
 x0 = SVector(0.0, 0.0)
@@ -28,25 +28,17 @@ DF_sys(x) = U*SMatrix{2,2}(1/(1 + x[1]^2), 0, 0, 1/(1 + x[2]^2))
 bound_DDF = opnorm(U, Inf)*3*sqrt(3)/8
 
 sys = DO.DiscSystem(F_sys, DF_sys, bound_DDF)
-graph, idxn = DO.symbolic_model(domain, sys)
-@test DO.get_nedges(graph) == 25214
+symmod = DO.symbolic_model_from_system(domain, sys)
+@test DO.get_nedges(symmod.graph) == 25214
 
-viablelist = Int[]
-for pos in DO.enum_pos(domain)
-    push!(viablelist, DO.get_index_by_elem(idxn, pos))
-end
-
-statelist = Int[]
-DO.viable_states!(statelist, graph, viablelist)
-@test length(statelist) == 294
+statelist = 1:DO.get_ncells(domain)
+viablelist = DO.viable_states(symmod.graph, statelist)
+@test length(viablelist) == 294
 
 pos = (1, 2)
 x = DO.get_coord_by_pos(grid, pos)
 
-dom1 = DO.Domain(grid)
-for state in statelist
-    DO.add_pos!(dom1, DO.get_elem_by_index(idxn, state))
-end
+dom1 = DO.support_domain(symmod, viablelist)
 
 @static if get(ENV, "CI", "false") == "false"
     include("../src/plotting.jl")

@@ -1,6 +1,6 @@
 # Minimize a function over a domain
 
-function minimum_domain(f, domain::Domain{N,T}, nsub; do_print = true) where {N,T}
+function minimize_over_domain(f, domain::Domain{N,T}, nsub) where {N,T}
     hsub = domain.grid.h./nsub
     nsub_bis = (nsub .- 1)./2
     sub_iter = hyper_range((-1).*nsub_bis, nsub_bis)

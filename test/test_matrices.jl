@@ -10,7 +10,7 @@ DO = Main.Dominance
 sleep(0.1) # used for good printing
 println("Started test")
 
-@testset "matrices: MatrixSet" begin
+@testset "MatrixSet" begin
 matset = DO.MatrixSet([1 2; 4 5])
 @test matset.center == [1 2; 4 5]
 @test iszero(matset.hull) && eltype(matset.hull) == Matrix{Int}

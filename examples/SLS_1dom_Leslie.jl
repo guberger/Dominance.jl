@@ -73,11 +73,11 @@ ax.set_ylim(-1.3, 1.3)
 
 graph = DO.Graph(1)
 DO.add_edge!(graph, 1, 1)
-ASri_field = Dict([DO.Edge(1, 1) => [(DO.MatrixSet(A1), 1), (DO.MatrixSet(A2), 2)]])
+ASri_lab = Dict([DO.Edge(1, 1) => [(DO.MatrixSet(A1), 1), (DO.MatrixSet(A2), 2)]])
 rate_tuple_iter = Iterators.product((γ1,), (γ2,))
 
 optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
-P_opt, δ_opt, rates_opt = DO.cone_optim(graph, ASri_field, rate_tuple_iter, optim_solver)
+P_opt, δ_opt, rates_opt = DO.cone_optim(graph, ASri_lab, rate_tuple_iter, optim_solver)
 
 for i in eachindex(P_opt)
     println(eigvals(P_opt[i]))

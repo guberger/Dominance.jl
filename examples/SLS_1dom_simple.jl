@@ -38,14 +38,14 @@ DO.add_edge!(graph, 1, 1)
 DO.add_edge!(graph, 1, 2)
 DO.add_edge!(graph, 2, 1)
 DO.add_edge!(graph, 2, 2)
-ASri_field = Dict([DO.Edge(1, 1) => [(DO.MatrixSet(A1), 1)],
+ASri_lab = Dict([DO.Edge(1, 1) => [(DO.MatrixSet(A1), 1)],
     DO.Edge(1, 2) => [(DO.MatrixSet(A2), 2)],
     DO.Edge(2, 1) => [(DO.MatrixSet(A1), 2)],
     DO.Edge(2, 2) => [(DO.MatrixSet(A2), 1)]])
 rate_tuple_iter = Iterators.product((γ1,), (sqrt(γ2),))
 
 optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
-P_opt, ~, ~ = DO.cone_optim(graph, ASri_field, rate_tuple_iter, optim_solver)
+P_opt, ~, ~ = DO.cone_optim(graph, ASri_lab, rate_tuple_iter, optim_solver)
 
 np = 50
 rad = 1.0
@@ -216,7 +216,7 @@ ax.text(-0.17, 1.0, "c", weight = "bold", fontsize = 18,
 rate_tuple_iter = Iterators.product((γ1,), (sqrt(γ2),))
 
 optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
-P_opt, ~, ~ = DO.cone_optim(graph, ASri_field, rate_tuple_iter, optim_solver)
+P_opt, ~, ~ = DO.cone_optim(graph, ASri_lab, rate_tuple_iter, optim_solver)
 
 np = 50
 rad = 1.0
