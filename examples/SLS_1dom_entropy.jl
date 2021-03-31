@@ -1,21 +1,16 @@
-include("../src/Dominance.jl")
-
 module ExampleMain
 
 using LinearAlgebra
 using StaticArrays
 using PyPlot
-using PyCall
 using JuMP
 using MosekTools
-using Random
-using Main.Dominance
-DO = Main.Dominance
-
+include("../src/Dominance.jl")
+DO = Dominance
 include("../src/plotting.jl")
 
 sleep(0.1) # used for good printing
-println("Plot SLS 1-dom simple")
+println("Plot SLS 1-dom entropy")
 
 matplotlib.rc("legend", fontsize = 15)
 matplotlib.rc("axes", labelsize = 15)

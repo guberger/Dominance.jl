@@ -1,14 +1,10 @@
-include("../src/Dominance.jl")
-
 module ExampleMain
 
 using LinearAlgebra
 using StaticArrays
 using PyPlot
-using PyCall
-using Main.Dominance
-DO = Main.Dominance
-
+include("../src/Dominance.jl")
+DO = Dominance
 include("../src/plotting.jl")
 
 sleep(0.1) # used for good printing

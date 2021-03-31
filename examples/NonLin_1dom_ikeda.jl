@@ -1,21 +1,17 @@
-include("../src/Dominance.jl")
-
 module ExampleMain
 
 using LinearAlgebra
 using StaticArrays
 using PyPlot
-using PyCall
 using JuMP
 using MosekTools
-using Main.Dominance
-DO = Main.Dominance
-
+include("../src/Dominance.jl")
+DO = Dominance
 include("../src/plotting.jl")
 include("./_ikeda_.jl")
 
 sleep(0.1) # used for good printing
-println("Plot SLS 1-dom simple")
+println("Plot NonLin 1-dom ikeda")
 
 matplotlib.rc("legend", fontsize = 15)
 matplotlib.rc("axes", labelsize = 15)

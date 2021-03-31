@@ -1,12 +1,14 @@
-include("../src/Dominance.jl")
-
 module TestMain
 
 using Test
 using LinearAlgebra
 using StaticArrays
-using Main.Dominance
-DO = Main.Dominance
+@static if isdefined(Main, :TestLocal)
+    include("../src/Dominance.jl")
+else
+    using Dominance
+end
+DO = Dominance
 
 sleep(0.1) # used for good printing
 println("Started test")
