@@ -112,6 +112,47 @@ function cell_image!(ax, vars, domain::DO.Domain{N,T}, sys;
     ax.add_collection(polylist)
 end
 
+function _rectangle_cycle(nsub)
+    # Give the contour of the rectangle with lower-left corner x0 and sides h
+    # and with nsub[i] points on each side i
+    sideL = ((-1.0, i) for i in range(-1.0, 1.0, length = nsub[2]))
+    sideU = ((i, 1.0) for i in range(-1.0, 1.0, length = nsub[1]))
+    sideR = ((1.0, i) for i in range(1.0, -1.0, length = nsub[2]))
+    sideD = ((i, -1.0) for i in range(1.0, -1.0, length = nsub[1]))
+    return sideL, sideU, sideR, sideD
+end
+
+# Images
+function cell_image!(ax, vars, domain::DO.Domain{2,T}, sys;
+        nsub = (20, 20),
+        fc = "blue", fa = 0.5, ec = "darkblue", ea = 1.0, ew = 1.5) where {N,T}
+    @assert length(vars) == 2
+    fca = ColorConv(fc, fa)
+    eca = ColorConv(ec, ea)
+    vertslist = Vector{SVector{2,T}}[]
+    sides = _rectangle_cycle(nsub)
+
+    for pos in DO.enum_pos(domain)
+        x = DO.get_coord_by_pos(domain.grid, pos)
+        verts = SVector{2,T}[]
+        for subpos_iter in sides
+            for subpos in subpos_iter
+                x_sub = x + subpos.*domain.grid.h/2
+                Fx_sub = sys.sys_map(x_sub)
+                push!(verts, Fx_sub)
+            end
+        end
+        push!(vertslist, verts)
+    end
+
+    polylist = matplotlib.collections.PolyCollection(vertslist)
+    polylist.set_facecolor(fca)
+    polylist.set_edgecolor(eca)
+    polylist.set_linewidth(ew)
+    ax.add_collection(polylist)
+end
+
+# Approwimation
 function cell_approx!(ax, vars, domain::DO.Domain{N,T}, sys;
         fc = "yellow", fa = 0.5, ec = "gold", ea = 1.0, ew = 0.5) where {N,T}
     @assert length(vars) == 2 && N >= 2

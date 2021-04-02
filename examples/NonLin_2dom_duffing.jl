@@ -114,6 +114,7 @@ ax.zaxis.pane.fill = false
 ax.set_xlabel(L"$x_1$")
 ax.set_ylabel(L"$x_2$")
 ax.set_zlabel(L"$x_3$")
+ax.set_yticks(-4:2:4)
 ax.view_init(elev = 7.5, azim = -127.25)
 
 println(collect(ccosx_list))
@@ -139,7 +140,7 @@ poly_list = Plot.make_collection(verts, fc = "green", fa = 0.3, ec = "none")
 ax.add_collection3d(poly_list)
 
 ## Cone plot
-x0 = 0.02
+x0 = 0.04
 y0 = 0.04
 ax1 = fig.add_axes((x0 + 0.0, y0 + 0.20, 0.22, 0.24), projection = "3d")
 ax2 = fig.add_axes((x0 + 0.22, y0 + 0.20, 0.22, 0.24), projection = "3d")
@@ -189,7 +190,6 @@ ax.text(0.52, 0.47, "d", weight = "bold", fontsize = 15)
 ax.text(0.52, 0.9, "b", weight = "bold", fontsize = 15)
 ax.text(0.04, 0.9, "a", weight = "bold", fontsize = 15)
 
-# fig.savefig("test/figures/fig_NonLin_2dom_duffing_allllllll.png",
-#     transparent = false,
-#     bbox_inches = matplotlib.transforms.Bbox([[0.3, 0.3], [8.9, 7.7]]))
+fig.savefig("./figures/fig_NonLin_2dom_duffing.png", transparent = false,
+    bbox_inches = matplotlib.transforms.Bbox(((0.36, 0.35), (8.82, 7.63))))
 end
