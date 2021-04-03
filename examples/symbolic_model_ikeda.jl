@@ -20,8 +20,8 @@ println("Plot symbolic model ikeda")
 
 matplotlib.rc("legend", fontsize = 15)
 matplotlib.rc("axes", labelsize = 15)
-matplotlib.rc("xtick", labelsize = 11)
-matplotlib.rc("ytick", labelsize = 11)
+matplotlib.rc("xtick", labelsize = 14)
+matplotlib.rc("ytick", labelsize = 14)
 
 ## System
 
@@ -61,13 +61,13 @@ ax = fig.add_subplot(aspect = "equal")
 extend = (-1, 1)
 ax.set_xlim((lb[1], ub[1]) .+ 0.2 .*extend)
 ax.set_ylim((lb[2], ub[2]) .+ 0.2 .*extend)
-Plot.domain!(ax, 1:2, domain, ew = 0.5, fc = "none")
+Plot.domain!(ax, 1:2, domain, ew = 1.5, fc = "none")
 Plot.domain!(ax, 1:2, domain1, ew = 0.1)
 Plot.domain!(ax, 1:2, domain2, ew = 0.1, fc = "blue", fa = 0.4)
 Plot.cell_image!(ax, 1:2, domain1, sys, fa = 0.7)
 for (i, pos) in enumerate(DO.enum_pos(domain))
     x = DO.get_coord_by_pos(grid, pos)
-    ax.text(x..., i, fontsize = "13")
+    ax.text(x..., i, fontsize = "18")
 end
 # Plot.cell_approx!(ax, 1:2, domain1, sys, fa = 0.3)
 
