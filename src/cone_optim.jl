@@ -113,57 +113,48 @@ function cone_optim(graph, ASri_lab, rate_tuple_iter, optim_solver)
     return P_opt, δ_opt, rates_opt
 end
 
-#=
-function cone_optim_single(graph, Ari_field, rate_tuple_iter, optim_solver)
-    A_type = fieldtype(eltype(valtype(Ari_field)), 1)
+function cone_optim_single_hyperbolic(graph, A_lab, optim_solver)
+    A_type = eltype(valtype(A_lab))
     A_size = size(A_type)
     scalar_type = eltype(A_type)
-    rate_tuple_type = eltype(rate_tuple_iter)
     δ_opt = -one(scalar_type)
-    rates_opt = ntuple(i -> -one(fieldtype(rate_tuple_type, i)), ndims(rate_tuple_iter))
+    rates_opt = (1,)
     nstates = get_nstates(graph)
     P_opt = Vector{A_type}(undef, nstates)
-    nrate_tuples = length(rate_tuple_iter)
     _EYE_ = A_type(I)
 
-    for (iter, rate_tuple) in enumerate(rate_tuple_iter)
-        model = Model(optim_solver)
+    model = Model(optim_solver)
 
-        P_list = [@variable(model, [1:A_size[1], 1:A_size[2]], Symmetric,
-            base_name = string("P", q)) for q = 1:nstates]
-        ε = @variable(model, base_name = "ε")
+    P_list = [@variable(model, [1:A_size[1], 1:A_size[2]], Symmetric,
+        base_name = string("P", q)) for q = 1:nstates]
+    ε = @variable(model, base_name = "ε")
+    ε_EYE_ = ε.*_EYE_
 
-        for edge in enum_edges(graph)
-            P1 = SMatrix{A_size...}(P_list[edge.source])
-            P2 = SMatrix{A_size...}(P_list[edge.target])
-            Ari_list = get(Ari_field, edge, Tuple{A_type,Int}[])
-            for Ari in Ari_list
-                A = Ari[1]
-                r2 = rate_tuple[Ari[2]]^2
-                @constraint(model, Symmetric(r2*P1 - A'*P2*A - ε.*_EYE_) ∈ PSDCone())
-            end
-        end
-
-        for q = 1:nstates
-            P = SMatrix{A_size...}(P_list[q])
-            @constraint(model, Symmetric(_EYE_ - P) ∈ PSDCone())
-            @constraint(model, Symmetric(_EYE_ + P) ∈ PSDCone())
-        end
-
-        @objective(model, Max, ε)
-
-        optimize!(model)
-
-        if value(ε) > δ_opt
-            δ_opt = value(ε)
-            rates_opt = rate_tuple
-            map!(x -> A_type(value.(x)), P_opt, P_list)
-        end
-
-        @printf("Iter: %d (/%d): rates = %s, δ: %g (δ*: %g)\n",
-            iter, nrate_tuples, rate_tuple, value(ε), δ_opt)
+    for edge in enum_edges(graph)
+        q1 = edge.source
+        q2 = edge.target
+        A_list = get(A_lab, edge, A_type[])
+        @constraint(model, [i = 1:length(A_list)], Symmetric(P_list[q1] -
+            A_list[i]'*P_list[q2]*A_list[i] - ε_EYE_) ∈ PSDCone())
     end
+
+    # for q = 1:nstates
+    #     P = P_list[q]
+    #     @constraint(model, Symmetric(_EYE_ - P) ∈ PSDCone())
+    #     @constraint(model, Symmetric(_EYE_ + P) ∈ PSDCone())
+    # end
+
+    @constraint(model, [q = 1:nstates], Symmetric(_EYE_ - P_list[q]) ∈ PSDCone())
+    @constraint(model, [q = 1:nstates], Symmetric(_EYE_ + P_list[q]) ∈ PSDCone())
+
+    @objective(model, Max, ε)
+
+    optimize!(model)
+
+    δ_opt = value(ε)
+    map!(x -> A_type(value.(x)), P_opt, P_list)
+
+    @printf("Iter: 1 (/1): rates = (1,), δ: %g (δ*: %g)\n", δ_opt, δ_opt)
 
     return P_opt, δ_opt, rates_opt
 end
-=#

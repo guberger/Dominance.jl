@@ -5,6 +5,7 @@ using StaticArrays
 using PyPlot
 using JuMP
 using MosekTools
+using ProfileView
 include("../src/Dominance.jl")
 DO = Dominance
 include("../src/plotting.jl")
@@ -65,23 +66,22 @@ bound_DDF_2 = -f_opt
 # bound_DDF_2 = opnorm(U)*3*sqrt(3)/8
 radius = bound_DDF_2*norm(symmod.grid.h, Inf)/2
 println(radius)
+radius = 0.0
 A_field = DO.sensitivity_matrices(domain, sys)
-ASri_tmp = Any[]
+A_tmp = Any[]
 for edge in DO.enum_edges(graph)
     source = edge.source
     target = edge.target
     pos = DO.get_pos_by_state(symmod, source)
-    push!(ASri_tmp, edge => [(DO.MatrixSet(A_field[pos], radius), 1)])
-    # push!(ASri_tmp, edge => [(A_field[source], 1)])
+    push!(A_tmp, edge => [A_field[pos]])
 end
-ASri_lab = Dict(ASri_tmp)
-rate_tuple_iter = DO.hyper_range((1.0,), (1.0,), 1)
+A_lab = Dict(A_tmp)
 
 println("$(DO.get_nedges(graph)) edges")
 
 println("start optim")
 optim_solver = optimizer_with_attributes(Mosek.Optimizer)
-P_opt, δ_opt, rates_opt = DO.cone_optim(graph, ASri_lab, rate_tuple_iter, optim_solver)
+@time P_opt, δ_opt, rates_opt = DO.cone_optim_single_hyperbolic(graph, A_lab, optim_solver)
 
 for i in eachindex(P_opt)
     ev = eigvals(P_opt[i])
@@ -121,6 +121,7 @@ fig.savefig("./figures/fig_NonLin_1dom_ikeda_model.png", transparent = false, dp
 pos = DO.get_pos_by_state(symmod, 3)
 x = DO.get_coord_by_pos(symmod.grid, pos)
 domain1 = DO.support_domain(symmod, 1)
+
 
 nsteps = 5
 np = 50

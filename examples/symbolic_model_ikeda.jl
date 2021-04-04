@@ -27,11 +27,11 @@ matplotlib.rc("ytick", labelsize = 14)
 
 lb = SVector(-1.1, -1.5)
 ub = SVector(3.4, 1.8)
-h = (ub - lb)/4.000001
-x0 = lb + h/2 .+ 0.0000001
+h = (ub - lb)/4
+x0 = lb + h/2
 grid = DO.Grid(x0, h)
 domain = DO.Domain(grid)
-DO.add_set!(domain, DO.HyperRectangle(lb, ub), DO.INNER)
+DO.add_set!(domain, DO.HyperRectangle(lb - h/4, ub + h/4), DO.INNER)
 bound_DDF_inf = 22.5
 bound_DDF_inf = 0.0
 
