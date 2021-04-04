@@ -95,14 +95,18 @@ function cell_image!(ax, vars, domain::DO.Domain{N,T}, sys;
     eca = ColorConv(ec, ea)
     vertslist = Vector{SVector{2,T}}[]
     ns = nsub .- 1
+    subpos_lims = ntuple(i -> 0.5, Val(N))
+    subpos_iter = hyper_range((-1).*subpos_lims, subpos_lims, nsub)
+    Fx_list = Vector{SVector{2,T}}(undef, length(subpos_iter))
 
     for pos in DO.enum_pos(domain)
-        x = DO.get_coord_by_pos(domain.grid, pos)
-        subpos_axes = ((0:ns[i])./ns[i] .- 0.5 for i in eachindex(ns))
-        subpos_iter = Iterators.product(subpos_axes...)
-        x_iter = (x + subpos.*domain.grid.h for subpos in subpos_iter)
-        Fx_iter = (sys.sys_map(x) for x in x_iter)
-        push!(vertslist, convex_hull([project(Fx, vars) for Fx in Fx_iter][:]))
+        empty!(Fx_list)
+        for subpos in subpos_iter
+            pos2 = pos .+ subpos
+            x = DO.get_coord_by_pos(domain.grid, pos2)
+            push!(Fx_list, sys.sys_map(x))
+        end
+        push!(vertslist, convex_hull(Fx_list))
     end
 
     polylist = matplotlib.collections.PolyCollection(vertslist)
@@ -115,10 +119,10 @@ end
 function _rectangle_cycle(nsub)
     # Give the contour of the rectangle with lower-left corner x0 and sides h
     # and with nsub[i] points on each side i
-    sideL = ((-1.0, i) for i in range(-1.0, 1.0, length = nsub[2]))
-    sideU = ((i, 1.0) for i in range(-1.0, 1.0, length = nsub[1]))
-    sideR = ((1.0, i) for i in range(1.0, -1.0, length = nsub[2]))
-    sideD = ((i, -1.0) for i in range(1.0, -1.0, length = nsub[1]))
+    sideL = ((-0.5, i) for i in range(-0.5, 0.5, length = nsub[2]))
+    sideU = ((i, 0.5) for i in range(-0.5, 0.5, length = nsub[1]))
+    sideR = ((0.5, i) for i in range(0.5, -0.5, length = nsub[2]))
+    sideD = ((i, -0.5) for i in range(0.5, -0.5, length = nsub[1]))
     return sideL, sideU, sideR, sideD
 end
 
@@ -133,16 +137,15 @@ function cell_image!(ax, vars, domain::DO.Domain{2,T}, sys;
     sides = _rectangle_cycle(nsub)
 
     for pos in DO.enum_pos(domain)
-        x = DO.get_coord_by_pos(domain.grid, pos)
-        verts = SVector{2,T}[]
+        Fx_list = SVector{2,T}[]
         for subpos_iter in sides
             for subpos in subpos_iter
-                x_sub = x + subpos.*domain.grid.h/2
-                Fx_sub = sys.sys_map(x_sub)
-                push!(verts, Fx_sub)
+                pos2 = pos .+ subpos
+                x = DO.get_coord_by_pos(domain.grid, pos2)
+                push!(Fx_list, sys.sys_map(x))
             end
         end
-        push!(vertslist, verts)
+        push!(vertslist, Fx_list)
     end
 
     polylist = matplotlib.collections.PolyCollection(vertslist)
@@ -153,27 +156,33 @@ function cell_image!(ax, vars, domain::DO.Domain{2,T}, sys;
 end
 
 # Approwimation
-function cell_approx!(ax, vars, domain::DO.Domain{N,T}, sys;
+function cell_approx!(ax, vars, domain::DO.Domain{N,T}, sys, nsub,
         fc = "yellow", fa = 0.5, ec = "gold", ea = 1.0, ew = 0.5) where {N,T}
     @assert length(vars) == 2 && N >= 2
     fca = ColorConv(fc, fa)
     eca = ColorConv(ec, ea)
     vertslist = Vector{SVector{2,T}}[]
-    r = domain.grid.h/2
+    subpos_lims = ((nsub .- 1)./2)./nsub
+    subpos_iter = DO.hyper_range((-1).*subpos_lims, subpos_lims, nsub)
+    hsub = domain.grid.h./nsub
+    r = hsub/2
     _H_ = SMatrix{N,N}(I).*r
     _ONE_ = ones(SVector{N})
     Fe = sys.error_map(norm(r, Inf))
     Fr = typeof(r)(_ONE_*Fe)
 
     for pos in DO.enum_pos(domain)
-        x = DO.get_coord_by_pos(domain.grid, pos)
-        Fx, DFx = sys.linsys_map(x, _H_)
-        A = inv(DFx)
-        b = abs.(A)*Fr .+ 1
-        HP = HPolytope([A; -A], vcat(b, b))
-        verts1 = vertices_list(HP, backend = CDDLib.Library())
-        verts2 = [project(Fx + v, vars) for v in verts1]
-        push!(vertslist, convex_hull(verts2))
+        for subpos in subpos_iter
+            pos2 = pos .+ subpos
+            x = DO.get_coord_by_pos(domain.grid, pos2)
+            Fx, DFx = sys.linsys_map(x, _H_)
+            A = inv(DFx)
+            b = abs.(A)*Fr .+ 1
+            HP = HPolytope([A; -A], vcat(b, b))
+            verts1 = vertices_list(HP, backend = CDDLib.Library())
+            verts2 = [project(Fx + v, vars) for v in verts1]
+            push!(vertslist, convex_hull(verts2))
+        end
     end
 
     polylist = matplotlib.collections.PolyCollection(vertslist)

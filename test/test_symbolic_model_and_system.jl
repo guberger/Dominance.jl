@@ -30,7 +30,7 @@ bound_DF = 1.0
 bound_DDF = 1.0
 
 sys = DO.ContSystemRK4(tstep, F_sys, DF_sys, bound_DF, bound_DDF, nsys)
-symmod = DO.symbolic_model_from_system(domain, sys)
+symmod = DO.symbolic_model_from_system(domain, sys, (1, 1))
 @test DO.get_nedges(symmod.graph) == 589
 
 pos = (1, 2)
@@ -58,7 +58,7 @@ end
     Plot.domain!(ax, 1:2, dom2)
     Plot.trajectory!(ax, 1:2, sys, x, 50)
     Plot.cell_image!(ax, 1:2, dom1, sys)
-    Plot.cell_approx!(ax, 1:2, dom1, sys)
+    Plot.cell_approx!(ax, 1:2, dom1, sys, (1, 1))
 end
 
 lb = SVector(-7.0, -7.0)
@@ -76,8 +76,8 @@ DF_sys(x) = U*SMatrix{2,2}(1/(1 + x[1]^2), 0, 0, 1/(1 + x[2]^2))
 bound_DDF = opnorm(U, Inf)*3*sqrt(3)/8
 
 sys = DO.DiscSystem(F_sys, DF_sys, bound_DDF)
-symmod = DO.symbolic_model_from_system(domain, sys)
-@test DO.get_nedges(symmod.graph) == 1065
+symmod = DO.symbolic_model_from_system(domain, sys, (2, 2))
+@test DO.get_nedges(symmod.graph) == 457
 
 pos = (1, 2)
 x = DO.get_coord_by_pos(grid, pos)
@@ -104,7 +104,7 @@ end
     Plot.domain!(ax, 1:2, dom2)
     Plot.trajectory!(ax, 1:2, sys, x, 50)
     Plot.cell_image!(ax, 1:2, dom1, sys)
-    Plot.cell_approx!(ax, 1:2, dom1, sys)
+    Plot.cell_approx!(ax, 1:2, dom1, sys, (2, 2))
 end
 end
 

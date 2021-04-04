@@ -16,8 +16,8 @@ iter = DO.hyper_range((1,2,3), (1,3,6))
 @test length(iter) == 8
 @test (1,2,6) ∈ iter
 @test (1,2.2,6) ∉ iter
-iter = DO.hyper_range((1,2,3), (1,3,6), 5)
-@test length(iter) == 125
+iter = DO.hyper_range((1,2,3), (1,3,6), (5, 5, 2))
+@test length(iter) == 50
 @test (1.0,2,6) ∈ iter
 @test (1,2,4) ∉ iter
 end

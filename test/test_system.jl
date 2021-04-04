@@ -49,7 +49,7 @@ DO.add_pos!(dom1, pos)
     Plot.domain!(ax, 1:2, dom1)
     Plot.trajectory!(ax, 1:2, sys, x, 50)
     Plot.cell_image!(ax, 1:2, dom1, sys)
-    Plot.cell_approx!(ax, 1:2, dom1, sys)
+    Plot.cell_approx!(ax, 1:2, dom1, sys, (10, 10))
 end
 
 θ = π/5.0
@@ -76,7 +76,7 @@ DO.add_pos!(dom1, pos)
     Plot.domain!(ax, 1:2, dom1)
     Plot.trajectory!(ax, 1:2, sys, x, 50)
     Plot.cell_image!(ax, 1:2, dom1, sys)
-    Plot.cell_approx!(ax, 1:2, dom1, sys)
+    Plot.cell_approx!(ax, 1:2, dom1, sys, (10, 10))
 end
 end
 

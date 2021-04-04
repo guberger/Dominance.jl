@@ -121,7 +121,7 @@ for Ac in Ac_list
     end
 end
 nr = 9
-rate_tuple_iter = DO.hyper_range((γ_min,), (γ_max,), nr)
+rate_tuple_iter = DO.hyper_range((γ_min,), (γ_max,), (nr,))
 
 optim_solver = optimizer_with_attributes(SDPA.Optimizer)
 ~, δ_opt, rates_opt = DO.cone_optim(graph, ASri_lab, rate_tuple_iter, optim_solver)
@@ -158,7 +158,7 @@ for Ac in Ac_list
     end
 end
 nr = 9
-rate_tuple_iter = DO.hyper_range((γ_min,), (γ_max,), nr)
+rate_tuple_iter = DO.hyper_range((γ_min,), (γ_max,), (nr,))
 
 optim_solver = optimizer_with_attributes(SDPA.Optimizer)
 ~, δ_opt, rates_opt = DO.cone_optim(graph, ASri_lab, rate_tuple_iter, optim_solver)

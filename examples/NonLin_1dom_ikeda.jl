@@ -22,7 +22,7 @@ matplotlib.rc("ytick", labelsize = 11)
 
 lb = SVector(-1.1, -1.5)
 ub = SVector(3.4, 1.8)
-h = SVector(0.15, 0.11)
+h = (ub - lb)./(20, 15)
 x0 = lb + h/2
 grid = DO.Grid(x0, h)
 domain = DO.Domain(grid)
@@ -38,12 +38,12 @@ sys = DO.DiscSystem(Ikeda, DIkeda, bound_DDF_inf)
 domain_list = DO.Domain[]
 h_list = typeof(h)[]
 
-nrounds = 2
+nrounds = 6
 
 for i = 1:nrounds
     global domain
     global grid
-    symmod = DO.symbolic_model_from_system(domain, sys)
+    symmod = DO.symbolic_model_from_system(domain, sys, (6, 6))
     global symmod
     statelist = 1:DO.get_ncells(domain)
     viablelist = DO.viable_states(symmod.graph, statelist)
@@ -72,10 +72,9 @@ for edge in DO.enum_edges(graph)
     target = edge.target
     pos = DO.get_pos_by_state(symmod, source)
     push!(ASri_tmp, edge => [(DO.MatrixSet(A_field[pos], radius), 1)])
-    # push!(ASri_tmp, edge => [(A_field[source], 1)])
 end
 ASri_lab = Dict(ASri_tmp)
-rate_tuple_iter = DO.hyper_range((1.0,), (1.0,), 1)
+rate_tuple_iter = DO.hyper_range((1.0,), (1.0,), (1,))
 
 println("$(DO.get_nedges(graph)) edges")
 
@@ -94,12 +93,13 @@ println(rates_opt)
 P_field = Dict([DO.get_pos_by_state(symmod, i) => P_opt[i] for i in eachindex(P_opt)])
 
 fig = PyPlot.figure(figsize = (9.8, 7.0))
-ncols = ceil(Int, nrounds/2)
+irounds = 1:4
+ncols = ceil(Int, length(irounds)/2)
 gs = matplotlib.gridspec.GridSpec(2, ncols, figure = fig, wspace = 0.3, hspace = 0.3)
-AX_ = [fig.add_subplot(get(gs, i - 1)) for i = 1:nrounds]
+AX_ = [fig.add_subplot(get(gs, i - 1)) for i in eachindex(irounds)]
 extend = (-1, 1)
 
-for i = 1:nrounds
+for (i, iround) in enumerate(irounds)
     ax = AX_[i]
     ax.set_xlim((lb[1], ub[1]) .+ 0.2 .*extend)
     ax.set_ylim((lb[2], 1.25) .+ 0.12 .*extend)
@@ -110,15 +110,15 @@ for i = 1:nrounds
         ax.set_xlabel(L"$x_1$")
     end
     ax.set_title("\$h=[$(h_list[i][1]), $(h_list[i][2])]^\\top\$")
-    ew = norm(h_list[i]) * 5.0
+    ew = norm(h_list[iround]) * 5.0
     display(ew)
-    Plot.domain!(ax, 1:2, domain_list[i], ew = ew)
+    Plot.domain!(ax, 1:2, domain_list[iround], ew = ew)
 end
 
 fig.savefig("./figures/fig_NonLin_1dom_ikeda_model.png", transparent = false, dpi = 400,
     bbox_inches = matplotlib.transforms.Bbox(((0.48, 0.27), (8.85, 6.38))))
 
-pos = DO.get_pos_by_state(symmod, 3)
+pos = DO.get_pos_by_state(symmod, 1)
 x = DO.get_coord_by_pos(symmod.grid, pos)
 domain1 = DO.support_domain(symmod, 1)
 
@@ -130,9 +130,9 @@ fig = PyPlot.figure(figsize = (9.8, 7.0))
 ax = fig.add_subplot()
 ax.set_xlim((lb[1], ub[1]) .+ 0.2 .*extend)
 ax.set_ylim((lb[2], 1.25) .+ 0.12 .*extend)
-Plot.domain!(ax, 1:2, domain, ew = 0.1)
-Plot.cell_image!(ax, 1:2, domain1, sys)
-Plot.cell_approx!(ax, 1:2, domain1, sys)
+Plot.domain!(ax, 1:2, domain_list[4], ew = 0.1)
+# Plot.cell_image!(ax, 1:2, domain1, sys)
+# Plot.cell_approx!(ax, 1:2, domain1, sys)
 Plot.trajectory!(ax, 1:2, sys, x, nsteps)
 if !isdefined(ExampleMain, :P_field)
     P_field = Dict([DO.get_pos_by_state(symmod, i) => SMatrix{2,2}(1.0, 0.0, 0.0, -1.0)

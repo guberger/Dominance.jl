@@ -5,7 +5,6 @@ using StaticArrays
 using PyPlot
 using JuMP
 using MosekTools
-using ProfileView
 include("../src/Dominance.jl")
 DO = Dominance
 include("../src/plotting.jl")
@@ -23,7 +22,7 @@ matplotlib.rc("ytick", labelsize = 11)
 
 lb = SVector(-1.1, -1.5)
 ub = SVector(3.4, 1.8)
-h = SVector(0.15, 0.11)
+h = (ub - lb)./(20, 15)
 x0 = lb + h/2
 grid = DO.Grid(x0, h)
 domain = DO.Domain(grid)
@@ -39,12 +38,12 @@ sys = DO.DiscSystem(Ikeda, DIkeda, bound_DDF_inf)
 domain_list = DO.Domain[]
 h_list = typeof(h)[]
 
-nrounds = 2
+nrounds = 6
 
 for i = 1:nrounds
     global domain
     global grid
-    symmod = DO.symbolic_model_from_system(domain, sys)
+    symmod = DO.symbolic_model_from_system(domain, sys, (6, 6))
     global symmod
     statelist = 1:DO.get_ncells(domain)
     viablelist = DO.viable_states(symmod.graph, statelist)
@@ -66,22 +65,34 @@ bound_DDF_2 = -f_opt
 # bound_DDF_2 = opnorm(U)*3*sqrt(3)/8
 radius = bound_DDF_2*norm(symmod.grid.h, Inf)/2
 println(radius)
-radius = 0.0
+# radius = 0.0
 A_field = DO.sensitivity_matrices(domain, sys)
 A_tmp = Any[]
+ASri_tmp = Any[]
 for edge in DO.enum_edges(graph)
     source = edge.source
     target = edge.target
     pos = DO.get_pos_by_state(symmod, source)
     push!(A_tmp, edge => [A_field[pos]])
+    push!(ASri_tmp, edge => [(DO.MatrixSet(A_field[pos], radius), 1)])
 end
 A_lab = Dict(A_tmp)
+ASri_lab = Dict(ASri_tmp)
+rate_tuple_iter = DO.hyper_range((1.0,), (1.0,), (1,))
 
 println("$(DO.get_nedges(graph)) edges")
 
+# f_cbp = state -> DO.get_coord_by_pos(domain.grid, DO.get_pos_by_state(symmod, state))
+# vec = [f_cbp.((edge.source, edge.target)) for edge in DO.enum_edges(graph)]
+# sort!(vec)
+# display(vec)
+
 println("start optim")
 optim_solver = optimizer_with_attributes(Mosek.Optimizer)
-@time P_opt, δ_opt, rates_opt = DO.cone_optim_single_hyperbolic(graph, A_lab, optim_solver)
+# P_opt, δ_opt, rates_opt = DO.cone_optim_single_hyperbolic(graph, A_lab, optim_solver)
+# @time P_opt, δ_opt, rates_opt = DO.cone_optim_single_hyperbolic(graph, A_lab, optim_solver)
+P_opt, δ_opt, rates_opt = DO.cone_optim(graph, ASri_lab, rate_tuple_iter, optim_solver)
+# @time P_opt, δ_opt, rates_opt = DO.cone_optim(graph, ASri_lab, rate_tuple_iter, optim_solver)
 
 for i in eachindex(P_opt)
     ev = eigvals(P_opt[i])
@@ -115,13 +126,12 @@ for i = 1:nrounds
     Plot.domain!(ax, 1:2, domain_list[i], ew = ew)
 end
 
-fig.savefig("./figures/fig_NonLin_1dom_ikeda_model.png", transparent = false, dpi = 400,
-    bbox_inches = matplotlib.transforms.Bbox(((0.48, 0.27), (8.85, 6.38))))
+# fig.savefig("./figures/fig_NonLin_1dom_ikeda_model.png", transparent = false, dpi = 400,
+#     bbox_inches = matplotlib.transforms.Bbox(((0.48, 0.27), (8.85, 6.38))))
 
-pos = DO.get_pos_by_state(symmod, 3)
+pos = DO.get_pos_by_state(symmod, 1)
 x = DO.get_coord_by_pos(symmod.grid, pos)
 domain1 = DO.support_domain(symmod, 1)
-
 
 nsteps = 5
 np = 50
@@ -133,7 +143,7 @@ ax.set_xlim((lb[1], ub[1]) .+ 0.2 .*extend)
 ax.set_ylim((lb[2], 1.25) .+ 0.12 .*extend)
 Plot.domain!(ax, 1:2, domain, ew = 0.1)
 Plot.cell_image!(ax, 1:2, domain1, sys)
-Plot.cell_approx!(ax, 1:2, domain1, sys)
+Plot.cell_approx!(ax, 1:2, domain1, sys, (6, 6))
 Plot.trajectory!(ax, 1:2, sys, x, nsteps)
 if !isdefined(ExampleMain, :P_field)
     P_field = Dict([DO.get_pos_by_state(symmod, i) => SMatrix{2,2}(1.0, 0.0, 0.0, -1.0)

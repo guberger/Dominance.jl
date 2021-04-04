@@ -113,7 +113,8 @@ function cone_optim(graph, ASri_lab, rate_tuple_iter, optim_solver)
     return P_opt, δ_opt, rates_opt
 end
 
-function cone_optim_single_hyperbolic(graph, A_lab, optim_solver)
+#=
+function hyperbolic_optim(graph, A_lab, optim_solver)
     A_type = eltype(valtype(A_lab))
     A_size = size(A_type)
     scalar_type = eltype(A_type)
@@ -131,21 +132,18 @@ function cone_optim_single_hyperbolic(graph, A_lab, optim_solver)
     ε_EYE_ = ε.*_EYE_
 
     for edge in enum_edges(graph)
-        q1 = edge.source
-        q2 = edge.target
+        P1 = P_list[edge.source]
+        P2 = P_list[edge.target]
         A_list = get(A_lab, edge, A_type[])
-        @constraint(model, [i = 1:length(A_list)], Symmetric(P_list[q1] -
-            A_list[i]'*P_list[q2]*A_list[i] - ε_EYE_) ∈ PSDCone())
+        @constraint(model, [i = 1:length(A_list)], Symmetric(P1 -
+            A_list[i]'*P2*A_list[i] - ε_EYE_) ∈ PSDCone())
     end
 
-    # for q = 1:nstates
-    #     P = P_list[q]
-    #     @constraint(model, Symmetric(_EYE_ - P) ∈ PSDCone())
-    #     @constraint(model, Symmetric(_EYE_ + P) ∈ PSDCone())
-    # end
-
-    @constraint(model, [q = 1:nstates], Symmetric(_EYE_ - P_list[q]) ∈ PSDCone())
-    @constraint(model, [q = 1:nstates], Symmetric(_EYE_ + P_list[q]) ∈ PSDCone())
+    for q = 1:nstates
+        P = P_list[q]
+        @constraint(model, Symmetric(_EYE_ - P) ∈ PSDCone())
+        @constraint(model, Symmetric(_EYE_ + P) ∈ PSDCone())
+    end
 
     @objective(model, Max, ε)
 
@@ -158,3 +156,4 @@ function cone_optim_single_hyperbolic(graph, A_lab, optim_solver)
 
     return P_opt, δ_opt, rates_opt
 end
+=#
