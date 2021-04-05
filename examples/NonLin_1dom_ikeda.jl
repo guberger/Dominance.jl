@@ -93,7 +93,7 @@ println(rates_opt)
 P_field = Dict([DO.get_pos_by_state(symmod, i) => P_opt[i] for i in eachindex(P_opt)])
 
 fig = PyPlot.figure(figsize = (9.8, 7.0))
-irounds = (2, 3, 4, 6)
+irounds = (2, 3, 4, 5)
 ncols = ceil(Int, length(irounds)/2)
 gs = matplotlib.gridspec.GridSpec(2, ncols, figure = fig, wspace = 0.2, hspace = 0.3)
 AX_ = [fig.add_subplot(get(gs, i - 1)) for i in eachindex(irounds)]
@@ -109,7 +109,7 @@ for (i, iround) in enumerate(irounds)
     if i >= ncols*2 - 1
         ax.set_xlabel(L"$x_1$")
     end
-    ax.set_title("\$h=[$(h_list[i][1]), $(h_list[i][2])]^\\top\$", fontsize = 16)
+    ax.set_title("\$h=[$(h_list[iround][1]), $(h_list[iround][2])]^\\top\$", fontsize = 16)
     ew = norm(h_list[iround]) * 5.0
     display(ew)
     Plot.domain!(ax, 1:2, domain_list[iround], ew = ew)
