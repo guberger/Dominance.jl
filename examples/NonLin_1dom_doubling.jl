@@ -38,7 +38,7 @@ bound_DDF_inf = -f_opt
 # bound_DDF_inf = opnorm(U, Inf)*3*sqrt(3)/8
 
 sys = DO.DiscSystem(Doubling, DDoubling, bound_DDF_inf)
-symmod = DO.symbolic_model_from_system(domain, sys)
+symmod = DO.symbolic_model_from_system(domain, sys, (2, 2))
 
 statelist = 1:DO.get_ncells(domain)
 viablelist = DO.viable_states(symmod.graph, statelist)
@@ -64,8 +64,8 @@ for edge in DO.enum_edges(graph)
 end
 ASri_lab = Dict(ASri_tmp)
 nr = 3
-rate_tuple_iter = DO.hyper_range((0.5,), (0.7,), nr)
-rate_tuple_iter = DO.hyper_range((0.6,), (0.6,), 1)
+rate_tuple_iter = DO.hyper_range((0.5,), (0.7,), (nr,))
+rate_tuple_iter = DO.hyper_range((0.6,), (0.6,), (1,))
 
 println("start optim")
 optim_solver = optimizer_with_attributes(Mosek.Optimizer)

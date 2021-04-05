@@ -61,7 +61,7 @@ for A in Aev_list
         mfc = Plot._colors[1], mec = "k", mew = 0.5)
 end
 nr = 9
-rate_tuple_iter = DO.hyper_range((γ_min,), (γ_max,), nr)
+rate_tuple_iter = DO.hyper_range((γ_min,), (γ_max,), (nr,))
 
 np = 100
 ang = range(0.0, 2.0*pi, length = np)

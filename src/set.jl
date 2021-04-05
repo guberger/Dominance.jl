@@ -42,7 +42,7 @@ function hyper_range(lb::NTuple{N,T}, ub::NTuple{N,T}) where {N,T}
     return Iterators.product(ranges...)
 end
 
-function hyper_range(lb::NTuple{N,T}, ub::NTuple{N,T}, length::NTuple{N,Int}) where {N,T}
-    ranges = ntuple(i -> range(lb[i], ub[i], length = length[i]), Val(N))
+function hyper_range(lb::NTuple{N,T}, ub::NTuple{N,T}, lengths::NTuple{N,Int}) where {N,T}
+    ranges = ntuple(i -> range(lb[i], ub[i], length = lengths[i]), Val(N))
     return Iterators.product(ranges...)
 end

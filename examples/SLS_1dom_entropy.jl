@@ -35,7 +35,7 @@ for i = 1:3, j = 1:3
 end
 ASri_lab = Dict(ASri_tmp)
 nr = 9
-rate_tuple_iter = DO.hyper_range((EG1[2], EG2[2]), (EG1[1], EG2[1]), nr)
+rate_tuple_iter = DO.hyper_range((EG1[2], EG2[2]), (EG1[1], EG2[1]), (nr, nr))
 
 optim_solver = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
 P_opt, ~, ~ = DO.cone_optim(graph, ASri_lab, rate_tuple_iter, optim_solver)

@@ -19,7 +19,7 @@ sleep(0.1) # used for good printing
 println("Plot symbolic model ikeda")
 
 matplotlib.rc("legend", fontsize = 15)
-matplotlib.rc("axes", labelsize = 15)
+matplotlib.rc("axes", labelsize = 18)
 matplotlib.rc("xtick", labelsize = 14)
 matplotlib.rc("ytick", labelsize = 14)
 
@@ -33,7 +33,7 @@ grid = DO.Grid(x0, h)
 domain = DO.Domain(grid)
 DO.add_set!(domain, DO.HyperRectangle(lb - h/4, ub + h/4), DO.INNER)
 bound_DDF_inf = 22.5
-bound_DDF_inf = 0.0
+# bound_DDF_inf = 0.0
 
 sys = DO.DiscSystem(Ikeda, DIkeda, bound_DDF_inf)
 
@@ -42,7 +42,7 @@ pos = DO.get_pos_by_coord(grid, x)
 domain1 = DO.Domain(grid)
 DO.add_pos!(domain1, pos)
 
-symmod = DO.symbolic_model_from_system(domain, sys)
+symmod = DO.symbolic_model_from_system(domain, sys, (10, 10))
 graph = symmod.graph
 domain2 = DO.Domain(grid)
 source = DO.get_state_by_pos(symmod, pos)
@@ -70,9 +70,11 @@ for (i, pos) in enumerate(DO.enum_pos(domain))
     ax.text(x..., i, fontsize = "18")
 end
 # Plot.cell_approx!(ax, 1:2, domain1, sys, fa = 0.3)
+ax.set_xlabel(L"$x_1$")
+ax.set_ylabel(L"$x_2$")
 
 fig.savefig("./figures/fig_symbolic_model_image.png", transparent = false,
-    bbox_inches = matplotlib.transforms.Bbox(((0.55, 0.39), (7.0, 5.18))))
+    bbox_inches = matplotlib.transforms.Bbox(((0.18, 0.07), (7.0, 5.18))))
 
 nstates = DO.get_nstates(graph)
 g = SimpleDiGraph(nstates)
@@ -93,7 +95,7 @@ for (i, edge) in enumerate(edges(g))
     end
 end
 Compose.draw(PNG("./figures/fig_symbolic_model_graph.png", 16cm, 16cm, dpi = 400),
-    gplot(g, nodelabel = 1:nv(g),
+    gplot(g, layout = spring_layout, nodelabel = 1:nv(g),
         nodefillc = node_colors, nodestrokec = "black", nodestrokelw = 0.01,
         NODELABELSIZE = 10, NODESIZE = 0.1,
         edgestrokec = edge_colors, edgelinewidth = edge_lws))
