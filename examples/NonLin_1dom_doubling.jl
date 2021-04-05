@@ -24,9 +24,10 @@ lim1 = 3.0
 lb = SVector(-lim1, -lim1)
 ub = SVector(lim1, lim1)
 x0 = SVector(0.0, 0.0)
-h = SVector(1.0, 1.0)/15
+h = SVector(1.0, 1.0)/40
 grid = DO.Grid(x0, h)
 domain = DO.Domain(grid)
+domain1 = domain
 DO.add_set!(domain, DO.HyperRectangle(lb, ub), DO.OUTER)
 DO.remove_set!(domain, DO.HyperRectangle(lb/10, ub/10), DO.OUTER)
 
@@ -64,7 +65,8 @@ for edge in DO.enum_edges(graph)
     # push!(ASri_tmp, edge => [(A_field[source], 1)])
 end
 ASri_lab = Dict(ASri_tmp)
-rate_tuple_iter = DO.hyper_range((1.0,), (1.0,), (1,))
+rate_tuple_iter = DO.hyper_range((1.85,), (1.85,), (1,))
+# rate_tuple_iter = DO.hyper_range((2.15,), (2.15,), (1,))
 
 println("$(DO.get_nedges(graph)) edges")
 
@@ -94,7 +96,7 @@ ax = fig.add_subplot(aspect = "equal")
 lim2 = 1.5
 ax.set_xlim((-lim2, lim2))
 ax.set_ylim((-lim2, lim2))
-Plot.domain!(ax, 1:2, domain, ew = 0.1)
+Plot.domain!(ax, 1:2, domain1, ew = 0.1)
 line = Plot.trajectory!(ax, 1:2, sys, x, nsteps, lc = "black")
 Plot.add_arrow!(line[1])
 Plot.cones!(ax, symmod.grid, sys, x, P_field, nsteps, rad, np)
