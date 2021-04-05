@@ -66,6 +66,29 @@ function set!(ax, vars, rect::DO.HyperRectangle;
     ax.add_collection(polylist)
 end
 
+function add_arrow!(line; size = 15, lc = nothing)
+    if isnothing(lc)
+        lc2 = line.get_color()
+    end
+
+    xdata = line.get_xdata()
+    ydata = line.get_ydata()
+    npoints = min(length(xdata), length(ydata))
+    npoints > 1 || return
+
+    for i = 1:npoints-1
+        x = (xdata[i + 1] + xdata[i])/2
+        y = (ydata[i + 1] + ydata[i])/2
+        dx = (xdata[i + 1] - xdata[i])/2
+        dy = (ydata[i + 1] - ydata[i])/2
+        line.axes.annotate("",
+            xytext = (x - 0.1*dx, y - 0.1*dy),
+            xy = (x, y),
+            arrowprops = Dict(["arrowstyle" => "-|>", "color" => lc2]),
+            size = size)
+    end
+end
+
 # Trajectory open loop
 function trajectory!(ax, vars, sys, x0, nstep;
         lc = "red", lw = 1.5, mc = "black", ms = 5.0)

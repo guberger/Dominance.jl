@@ -13,10 +13,10 @@ include("./_ikeda_.jl")
 sleep(0.1) # used for good printing
 println("Plot NonLin 1-dom ikeda")
 
-matplotlib.rc("legend", fontsize = 15)
-matplotlib.rc("axes", labelsize = 15)
-matplotlib.rc("xtick", labelsize = 11)
-matplotlib.rc("ytick", labelsize = 11)
+matplotlib.rc("legend", fontsize = 18)
+matplotlib.rc("axes", labelsize = 16)
+matplotlib.rc("xtick", labelsize = 15)
+matplotlib.rc("ytick", labelsize = 15)
 
 ## System
 
@@ -93,9 +93,9 @@ println(rates_opt)
 P_field = Dict([DO.get_pos_by_state(symmod, i) => P_opt[i] for i in eachindex(P_opt)])
 
 fig = PyPlot.figure(figsize = (9.8, 7.0))
-irounds = 1:4
+irounds = (2, 3, 4, 6)
 ncols = ceil(Int, length(irounds)/2)
-gs = matplotlib.gridspec.GridSpec(2, ncols, figure = fig, wspace = 0.3, hspace = 0.3)
+gs = matplotlib.gridspec.GridSpec(2, ncols, figure = fig, wspace = 0.2, hspace = 0.3)
 AX_ = [fig.add_subplot(get(gs, i - 1)) for i in eachindex(irounds)]
 extend = (-1, 1)
 
@@ -109,14 +109,14 @@ for (i, iround) in enumerate(irounds)
     if i >= ncols*2 - 1
         ax.set_xlabel(L"$x_1$")
     end
-    ax.set_title("\$h=[$(h_list[i][1]), $(h_list[i][2])]^\\top\$")
+    ax.set_title("\$h=[$(h_list[i][1]), $(h_list[i][2])]^\\top\$", fontsize = 16)
     ew = norm(h_list[iround]) * 5.0
     display(ew)
     Plot.domain!(ax, 1:2, domain_list[iround], ew = ew)
 end
 
 fig.savefig("./figures/fig_NonLin_1dom_ikeda_model.png", transparent = false, dpi = 400,
-    bbox_inches = matplotlib.transforms.Bbox(((0.48, 0.27), (8.85, 6.38))))
+    bbox_inches = matplotlib.transforms.Bbox(((0.58, 0.18), (8.85, 6.44))))
 
 pos = DO.get_pos_by_state(symmod, 1)
 x = DO.get_coord_by_pos(symmod.grid, pos)
@@ -128,16 +128,22 @@ rad = 0.4
 fact = 1.1
 fig = PyPlot.figure(figsize = (9.8, 7.0))
 ax = fig.add_subplot()
-ax.set_xlim((lb[1], ub[1]) .+ 0.2 .*extend)
-ax.set_ylim((lb[2], 1.25) .+ 0.12 .*extend)
-Plot.domain!(ax, 1:2, domain_list[4], ew = 0.1)
+ax.set_xlim((lb[1], ub[1]) .+ 0.3 .*extend)
+ax.set_ylim((-1.6, 0.83) .+ 0.3 .*extend)
+Plot.domain!(ax, 1:2, domain_list[4], ew = 0.3)
 # Plot.cell_image!(ax, 1:2, domain1, sys)
 # Plot.cell_approx!(ax, 1:2, domain1, sys)
-Plot.trajectory!(ax, 1:2, sys, x, nsteps)
+line = Plot.trajectory!(ax, 1:2, sys, x, nsteps, lc = "black")
+Plot.add_arrow!(line[1])
 if !isdefined(ExampleMain, :P_field)
     P_field = Dict([DO.get_pos_by_state(symmod, i) => SMatrix{2,2}(1.0, 0.0, 0.0, -1.0)
         for i = 1:DO.get_nstates(symmod)])
 end
 Plot.cones!(ax, symmod.grid, sys, x, P_field, nsteps, rad, np)
+ax.set_xlabel(L"$x_1$")
+ax.set_ylabel(L"$x_2$")
+
+fig.savefig("./figures/fig_NonLin_1dom_ikeda_cones.png", transparent = false, dpi = 400,
+    bbox_inches = matplotlib.transforms.Bbox(((0.37, 0.2), (8.85, 6.18))))
 
 end  # module ExampleMain
