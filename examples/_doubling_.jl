@@ -2,7 +2,6 @@ include("../src/symfunc.jl")
 
 x = SymPy.Sym("x")
 y = SymPy.Sym("y")
-θ = π/5.0
-U = 2*SMatrix{2,2}(cos(θ), -sin(θ), sin(θ), cos(θ))
-sym_func = U*[atan(x), atan(y)]
+sym_func = [x^2 - y^2, 2*x*y]*((x^2 + y^2)^(-3/4))
+# sym_func = 2*atan.([x^2 - y^2, 2*x*y])
 symfunc_2_juliafunc(sym_func, (x, y), base_name = "Doubling")
