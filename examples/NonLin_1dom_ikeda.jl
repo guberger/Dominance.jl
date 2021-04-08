@@ -140,10 +140,13 @@ if !isdefined(ExampleMain, :P_field)
         for i = 1:DO.get_nstates(symmod)])
 end
 Plot.cones!(ax, symmod.grid, sys, x, P_field, nsteps, rad, np)
-ax.set_xlabel(L"$x_1$")
-ax.set_ylabel(L"$x_2$")
+ax.set_xlabel(L"$x_1$", fontsize = 20)
+ax.set_ylabel(L"$x_2$", fontsize = 20)
+for ax in fig.get_axes()
+    ax.tick_params(axis = "both", which = "major", labelsize = 19)
+end
 
 fig.savefig("./figures/fig_NonLin_1dom_ikeda_cones.png", transparent = false, dpi = 400,
-    bbox_inches = matplotlib.transforms.Bbox(((0.37, 0.2), (8.85, 6.18))))
+    bbox_inches = matplotlib.transforms.Bbox(((0.17, 0.06), (8.85, 6.18))))
 
 end  # module ExampleMain
