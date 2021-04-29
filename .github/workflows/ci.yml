@@ -23,7 +23,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - version: '1.6.0'
+          - version: 'nightly'  
+            os: ubuntu-latest
+            arch: x64
+          - version: '1.6.1'
             os: ubuntu-latest
             arch: x64
           - version: '1.5.4'

@@ -62,6 +62,7 @@ for A in Aev_list
 end
 nr = 9
 rate_tuple_iter = DO.hyper_range((γ_min,), (γ_max,), (nr,))
+# rate_tuple_iter = DO.hyper_range((0.9,), (1.2,), (nr,)) # Find upper bound
 
 np = 100
 ang = range(0.0, 2.0*pi, length = np)
