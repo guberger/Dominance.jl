@@ -16,7 +16,7 @@
 ```julia
 (@v1.6) pkg> activate ./examples
 ```
-Run your favorite example by executing the file, or running
+Run your favorite example by executing the corresponding file, or running
 ```julia
 julia> include("./examples/example_filename.jl")
 ```
@@ -28,7 +28,7 @@ Define a variable `TestLocal`
 ```julia
 julia> TestLocal = ""
 ```
-Run your favorite test by executing the file, or running
+Run your favorite test by executing the corresponding file, or running
 ```julia
 julia> include("./test/test_filename.jl")
 ```
