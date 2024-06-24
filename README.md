@@ -1,5 +1,3 @@
-# A package for dominance analysis
-
 | **Build Status** |
 |:----------------:|
 | [![Build Status][build-img]][build-url] |
