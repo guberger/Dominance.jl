@@ -1,4 +1,4 @@
-# Dominance.jl: A package for dominance analysis
+# A package for dominance analysis
 
 | **Build Status** |
 |:----------------:|
